@@ -399,6 +399,44 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"impersonation_log": {
+                  Row: {
+                    "admin_email": string,"admin_id": string | null,"ended_at": string | null,"id": string,"started_at": string,"target_email": string,"target_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "admin_email": string,"admin_id"?: string | null,"ended_at"?: string | null,"id"?: string,"started_at"?: string,"target_email": string,"target_id"?: string | null
+                  }
+                  Update: {
+                    "admin_email"?: string,"admin_id"?: string | null,"ended_at"?: string | null,"id"?: string,"started_at"?: string,"target_email"?: string,"target_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "impersonation_log_admin_id_fkey"
+      columns: ["admin_id"]
+isOneToOne: false
+      referencedRelation: "profile_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "impersonation_log_admin_id_fkey"
+      columns: ["admin_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "impersonation_log_target_id_fkey"
+      columns: ["target_id"]
+isOneToOne: false
+      referencedRelation: "profile_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "impersonation_log_target_id_fkey"
+      columns: ["target_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"official_unavailability": {
                   Row: {
                     "created_at": string,"end_date": string,"end_time": string | null,"id": string,"note": string | null,"start_date": string,"start_time": string | null,"user_id": string

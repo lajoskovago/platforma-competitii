@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { isImpersonating } from "@/lib/impersonation";
+import { stopImpersonation } from "@/app/(app)/impersonare/actions";
 import { createSupabaseMailer, createSupabaseServer } from "@/lib/supabase/server";
 import { str, type ActionState } from "@/lib/action-state";
 
@@ -27,6 +29,8 @@ export async function requestPasswordReset(_: ActionState, fd: FormData): Promis
 }
 
 export async function signOut() {
+  // During support impersonation, "Ieșire" returns to the admin's own account.
+  if (await isImpersonating()) return stopImpersonation();
   const supabase = await createSupabaseServer();
   await supabase.auth.signOut();
   redirect("/login");

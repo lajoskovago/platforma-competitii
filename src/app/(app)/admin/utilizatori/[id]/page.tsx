@@ -3,6 +3,8 @@ import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Badge, Card, Field, PageTitle, SectionTitle, inputClass } from "@/components/ui";
 import { UserRoleFields } from "@/components/user-role-fields";
 import { ROLE_LABEL, requireAdmin } from "@/lib/auth";
+import { formatDateTime } from "@/lib/format";
+import { startImpersonation } from "../../../impersonare/actions";
 import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
 import {
   assignClub,
@@ -32,6 +34,14 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/utiliz
       createSupabaseAdmin().auth.admin.getUserById(id),
     ]);
   if (!profile) notFound();
+  const { data: impLog } = me.isMaster
+    ? await supabase
+        .from("impersonation_log")
+        .select("id, started_at, ended_at, admin_email")
+        .eq("target_id", id)
+        .order("started_at", { ascending: false })
+        .limit(20)
+    : { data: [] };
 
   const assignedTeamIds = new Set((myTeams ?? []).map((t) => t.team?.id));
   const assignedClubIds = new Set((myClubs ?? []).map((c) => c.club?.id));
@@ -156,6 +166,35 @@ export default async function AdminUserPage({ params }: PageProps<"/admin/utiliz
         </Card>
       ) : (
         <p className="text-sm text-slate-500">Doar administratorul principal poate modifica un administrator.</p>
+      )}
+
+      {me.isMaster && profile.role !== "master_admin" && profile.id !== me.id && (
+        <>
+          <SectionTitle>Suport</SectionTitle>
+          <Card className="space-y-3">
+            <p className="text-sm text-slate-600">
+              Intrați în cont ca acest utilizator pentru a vedea exact ce vede el. Orice acțiune se face în numele lui și
+              este înregistrată în jurnal.
+            </p>
+            <ActionForm action={startImpersonation} confirm={`Intrați în contul lui ${profile.full_name || profile.email}?`}>
+              <input type="hidden" name="user_id" value={id} />
+              <SubmitButton variant="secondary">👤 Intră în cont ca acest utilizator</SubmitButton>
+            </ActionForm>
+            {(impLog ?? []).length > 0 && (
+              <details>
+                <summary className="cursor-pointer py-1 text-sm text-slate-500">Istoric ({impLog!.length})</summary>
+                <ul className="mt-1 space-y-1 text-xs text-slate-600">
+                  {impLog!.map((l) => (
+                    <li key={l.id}>
+                      {formatDateTime(l.started_at)}
+                      {l.ended_at ? ` – ${formatDateTime(l.ended_at)}` : " (nefinalizat)"} · {l.admin_email}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </Card>
+        </>
       )}
 
       <div className="mt-4 space-y-2">

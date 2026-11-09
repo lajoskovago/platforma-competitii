@@ -1,12 +1,28 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
+import { isImpersonating } from "@/lib/impersonation";
+import { stopImpersonation } from "./impersonare/actions";
 import { signOut } from "../login/actions";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await requireUser();
+  const impersonating = await isImpersonating();
 
   return (
     <>
+      {impersonating && (
+        <div className="sticky top-0 z-20 bg-red-600 px-4 py-2 text-sm text-white">
+          <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2">
+            <span>
+              👤 Sunteți conectat ca <strong>{user.fullName || user.email}</strong> (suport). Acțiunile se fac în numele
+              acestui utilizator.
+            </span>
+            <form action={stopImpersonation}>
+              <button className="min-h-9 rounded-lg bg-white px-3 font-semibold text-red-700">Revino la contul meu</button>
+            </form>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-2">
           <Link href="/" className="flex items-center gap-2 py-1 font-bold">
