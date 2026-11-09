@@ -67,12 +67,17 @@ export default async function GroupPage({ params }: PageProps<"/grupa/[id]">) {
             )}
           </div>
           {canAdmin && (
-            <ActionForm action={adminUnconfirmGroup} className="mt-3" confirm="Anulați confirmarea organizatorului?">
-              <input type="hidden" name="group_id" value={id} />
-              <SubmitButton variant="danger" full={false}>
-                Anulează confirmarea (admin)
-              </SubmitButton>
-            </ActionForm>
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-emerald-200 pt-3">
+              <LinkButton href={`/grupa/${id}/desemneaza`} variant="secondary">
+                Schimbă organizatorul (admin)
+              </LinkButton>
+              <ActionForm action={adminUnconfirmGroup} className="" confirm="Anulați confirmarea organizatorului?">
+                <input type="hidden" name="group_id" value={id} />
+                <SubmitButton variant="danger" full={false}>
+                  Anulează confirmarea (admin)
+                </SubmitButton>
+              </ActionForm>
+            </div>
           )}
         </Card>
       )}
@@ -103,6 +108,14 @@ export default async function GroupPage({ params }: PageProps<"/grupa/[id]">) {
         <div className="mt-3">
           <LinkButton href={`/grupa/${id}/organizeaza`} full>
             🏠 Vreau să organizez
+          </LinkButton>
+        </div>
+      )}
+
+      {canAdmin && !confirmed && (
+        <div className="mt-3">
+          <LinkButton href={`/grupa/${id}/desemneaza`} variant="secondary" full>
+            Desemnează organizatorul (admin)
           </LinkButton>
         </div>
       )}

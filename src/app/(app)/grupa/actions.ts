@@ -318,3 +318,28 @@ export async function generateGames(_: ActionState, fd: FormData): Promise<Actio
   refresh();
   return { ok: "Programul a fost generat. Verificați orele și echipele." };
 }
+
+/** Admin: assign the organiser of a group directly (team + date + gym). */
+export async function adminAssignOrganizer(_: ActionState, fd: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  const groupId = str(fd, "group_id");
+  const teamId = str(fd, "team_id");
+  if (!teamId) return { error: "Alegeți echipa organizatoare." };
+  const dates = readDates(fd);
+  if ("error" in dates) return { error: dates.error };
+  const gym = await resolveGym(fd, user.id);
+  if (gym.error) return { error: gym.error };
+
+  const supabase = await createSupabaseServer();
+  const { error } = await supabase.rpc("admin_assign_organizer", {
+    p_group_id: groupId,
+    p_team_id: teamId,
+    p_gym_id: gym.id!,
+    p_start_date: dates.start,
+    p_end_date: dates.end ?? undefined,
+    p_notes: str(fd, "notes") || undefined,
+  });
+  if (error) return dbError(error);
+  await notifyGroup(groupId, "Organizator desemnat", "Administratorul a desemnat organizatorul turneului.", user.id);
+  redirect(`/grupa/${groupId}`);
+}

@@ -89,10 +89,13 @@ export function canAdminRegion(user: CurrentUser, region: Region | null | undefi
   return user.isRegionalAdmin && (region == null || region === user.region);
 }
 
-/** Mirrors public.can_act_for_team(): own team, or admin of the club's region. */
-export function canActForTeam(user: CurrentUser, team: { id: string; clubRegion?: Region | null } | null | undefined) {
-  if (!team) return false;
-  return user.teamIds.has(team.id) || (user.isAdmin && canAdminRegion(user, team.clubRegion ?? null));
+/**
+ * Acting for a team (volunteer to organise, answer proposals, edit own proposal):
+ * only as its coach or club admin. Admins choose the organiser instead
+ * (confirm a proposal / assign a team), see canAdminRegion().
+ */
+export function canActForTeam(user: CurrentUser, team: { id: string } | null | undefined) {
+  return !!team && user.teamIds.has(team.id);
 }
 
 export const ROLE_LABEL: Record<Role, string> = {

@@ -633,6 +633,9 @@ isOneToOne: false
 "_try_auto_confirm":
 { Args: { "p_proposal_id": string }; Returns: undefined
                            },
+"admin_assign_organizer":
+{ Args: { "p_end_date"?: string,"p_group_id": string,"p_gym_id": string,"p_notes"?: string,"p_start_date": string,"p_team_id": string }; Returns: string
+                           },
 "admin_confirm_proposal":
 { Args: { "p_proposal_id": string }; Returns: undefined
                            },
@@ -692,6 +695,9 @@ isOneToOne: false
                            },
 "is_master_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_my_team":
+{ Args: { "p_team_id": string }; Returns: boolean
                            },
 "is_official":
 { Args: Record<PropertyKey, never>; Returns: boolean

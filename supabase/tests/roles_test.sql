@@ -68,21 +68,39 @@ select pg_temp.as_user('00000000-0000-0000-0000-0000000000f5');  -- referee SR5
 select pg_temp.check((select count(*) from groups) = (select count(*) from group_overview), 'referee sees all regional groups');
 select pg_temp.check((select count(*) from groups) > 20, 'referee sees many groups');
 
--- ---------------- regional admin intervention limited to own region
+-- ---------------- admins assign organisers, they do not volunteer
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000a5');  -- reg SR5
 insert into gyms (name, city, created_by) values ('Sala Test','Cluj', auth.uid());
--- SR5 admin proposes on behalf of a SR6 team in SR6 group -> refused (club region SR6)
+-- SR5 admin cannot assign in an SR6 group
+select pg_temp.expect_fail(format($q$select admin_assign_organizer(%L,%L,(select id from gyms where name='Sala Test'),'2026-12-01')$q$,
+  (select v from ids where k='g_u10m_sr6'), (select v from ids where k='t_ubt_u10')), 'SR5 admin assigns in SR6 group');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000a6');  -- reg SR6
+-- admins cannot volunteer ("Vreau să organizez") for a team
 select pg_temp.expect_fail(format($q$select create_proposal(%L,%L,(select id from gyms where name='Sala Test'),'2026-12-01',null,null,true)$q$,
-  (select v from ids where k='g_u10m_sr6'), (select v from ids where k='t_ubt_u10')), 'SR5 admin acting for SR6 team');
--- SR6 admin can
-select pg_temp.as_user('00000000-0000-0000-0000-0000000000a6');
-insert into ids select 'p6', create_proposal((select v from ids where k='g_u10m_sr6'),(select v from ids where k='t_ubt_u10'),(select id from gyms where name='Sala Test'),'2026-12-01',null,null,true);
--- SR5 admin cannot confirm SR6 group, SR6 admin can
+  (select v from ids where k='g_u10m_sr6'), (select v from ids where k='t_ubt_u10')), 'admin volunteers for a team');
+-- SR6 admin assigns the organiser directly
+insert into ids select 'p6', admin_assign_organizer((select v from ids where k='g_u10m_sr6'),(select v from ids where k='t_ubt_u10'),
+  (select id from gyms where name='Sala Test'),'2026-12-01');
+select pg_temp.check((select status from group_overview where group_id=(select v from ids where k='g_u10m_sr6'))='confirmed', 'assigned organiser confirmed');
+select pg_temp.check((select confirmed_by_admin from hosting_proposals where id=(select v from ids where k='p6')), 'flagged as admin decision');
+-- SR5 admin cannot confirm / change SR6 group
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000a5');
 select pg_temp.expect_fail(format('select admin_confirm_proposal(%L)', (select v from ids where k='p6')), 'SR5 confirms SR6 group');
+-- club admin of U-BT can still volunteer for his own team in another group
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+insert into ids select 'p_club', create_proposal(
+  (select g.id from groups g join tournaments t on t.id=g.tournament_id join categories c on c.id=t.category_id
+    where c.scope='regional' and c.code='U10M' and g.name='Grupa 3 (SR6)'),
+  (select t.id from teams t join categories c on c.id=t.category_id where c.scope='regional' and c.code='U10M' and t.name='U-BT Alb'),
+  (select id from gyms where name='Sala Test'),'2026-12-02',null,null,true);
+select pg_temp.check((select v from ids where k='p_club') is not null, 'club admin volunteers');
+-- reassigning: SR6 admin changes the organiser to another team -> previous one not_selected
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000a6');
-select admin_confirm_proposal((select v from ids where k='p6'));
-select pg_temp.check((select status from group_overview where group_id=(select v from ids where k='g_u10m_sr6'))='confirmed', 'SR6 admin confirmed');
+insert into ids select 'p6b', admin_assign_organizer((select v from ids where k='g_u10m_sr6'),
+  (select t.id from teams t join categories c on c.id=t.category_id where c.scope='regional' and c.code='U10M' and t.name='BeSport Basketball'),
+  (select id from gyms where name='Sala Test'),'2026-12-03');
+select pg_temp.check((select status from hosting_proposals where id=(select v from ids where k='p6'))='not_selected', 'previous organiser replaced');
+select pg_temp.check((select confirmed_proposal_id from groups where id=(select v from ids where k='g_u10m_sr6'))=(select v from ids where k='p6b'), 'group points to new organiser');
 
 -- ---------------- national games
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');  -- U-BT club admin
