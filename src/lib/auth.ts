@@ -1,0 +1,102 @@
+import "server-only";
+import { cache } from "react";
+import { redirect } from "next/navigation";
+import { createSupabaseServer } from "@/lib/supabase/server";
+import type { Database } from "@/lib/database.types";
+
+export type Region = Database["public"]["Enums"]["region"];
+export type Role = Database["public"]["Enums"]["user_role"];
+
+export type CurrentUser = {
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  role: Role;
+  region: Region | null;
+  isMaster: boolean;
+  isRegionalAdmin: boolean;
+  /** master or regional admin */
+  isAdmin: boolean;
+  isReferee: boolean;
+  isTableOfficial: boolean;
+  isOfficial: boolean;
+  /** clubs this user administers */
+  managedClubIds: string[];
+  /** teams this user coaches or manages through a club */
+  teamIds: Set<string>;
+};
+
+/** The logged-in user with profile and assignments, or null. Cached per request. */
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
+  const supabase = await createSupabaseServer();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return null;
+
+  const [{ data: profile }, { data: clubs }, { data: teamIds }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("email, full_name, phone, role, region, is_referee, is_table_official")
+      .eq("id", auth.user.id)
+      .single(),
+    supabase.from("club_managers").select("club_id").eq("user_id", auth.user.id),
+    supabase.rpc("my_team_ids"),
+  ]);
+
+  const role: Role = profile?.role ?? "user";
+  const isReferee = !!profile?.is_referee;
+  const isTableOfficial = !!profile?.is_table_official;
+  return {
+    id: auth.user.id,
+    email: profile?.email ?? auth.user.email ?? "",
+    fullName: profile?.full_name ?? "",
+    phone: profile?.phone ?? null,
+    role,
+    region: profile?.region ?? null,
+    isMaster: role === "master_admin",
+    isRegionalAdmin: role === "regional_admin",
+    isAdmin: role === "master_admin" || role === "regional_admin",
+    isReferee,
+    isTableOfficial,
+    isOfficial: isReferee || isTableOfficial,
+    managedClubIds: (clubs ?? []).map((c) => c.club_id),
+    teamIds: new Set((teamIds as unknown as string[] | null) ?? []),
+  };
+});
+
+export async function requireUser() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  return user;
+}
+
+/** Master or regional admin */
+export async function requireAdmin() {
+  const user = await requireUser();
+  if (!user.isAdmin) redirect("/");
+  return user;
+}
+
+export async function requireMaster() {
+  const user = await requireUser();
+  if (!user.isMaster) redirect("/");
+  return user;
+}
+
+/** Mirrors public.can_admin_region(): null region = mixed group, both regional admins. */
+export function canAdminRegion(user: CurrentUser, region: Region | null | undefined) {
+  if (user.isMaster) return true;
+  return user.isRegionalAdmin && (region == null || region === user.region);
+}
+
+/** Mirrors public.can_act_for_team(): own team, or admin of the club's region. */
+export function canActForTeam(user: CurrentUser, team: { id: string; clubRegion?: Region | null } | null | undefined) {
+  if (!team) return false;
+  return user.teamIds.has(team.id) || (user.isAdmin && canAdminRegion(user, team.clubRegion ?? null));
+}
+
+export const ROLE_LABEL: Record<Role, string> = {
+  master_admin: "Administrator principal",
+  regional_admin: "Administrator regional",
+  user: "Utilizator",
+};

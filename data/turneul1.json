@@ -1,0 +1,225 @@
+{
+  "_comment": "Turneul 1, sezon 2026-2027. Extras din 'Program campionate regionale_zonale (2).xlsx' si curatat (nume unificate). Regiunile cluburilor sunt deduse din grupe - de verificat.",
+  "season": "2026-2027",
+  "clubs": [
+    { "name": "LPS Satu Mare", "city": "Satu Mare", "region": "SR5" },
+    { "name": "CSS Sighet", "city": "Sighetu Marmației", "region": "SR5" },
+    { "name": "CSM Sighet", "city": "Sighetu Marmației", "region": "SR5" },
+    { "name": "ACS Eko Sighet", "city": "Sighetu Marmației", "region": "SR5" },
+    { "name": "CS Wildcats Baia Mare", "city": "Baia Mare", "region": "SR5" },
+    { "name": "Școala Gimnazială Nr. 9 Borșa", "city": "Borșa", "region": "SR5" },
+    { "name": "ACS Baschet Star", "city": null, "region": "SR5" },
+    { "name": "Valbon Arad", "city": "Arad", "region": "SR5" },
+    { "name": "CS Academia de Baschet Arad", "city": "Arad", "region": "SR5" },
+    { "name": "Baschet Club Best Arad", "city": "Arad", "region": "SR5" },
+    { "name": "Victoria Nădlac", "city": "Nădlac", "region": "SR5" },
+    { "name": "LPS Bihorul Oradea", "city": "Oradea", "region": "SR5" },
+    { "name": "New Generation Oradea", "city": "Oradea", "region": "SR5" },
+    { "name": "CN Mihai Eminescu Oradea", "city": "Oradea", "region": "SR5" },
+    { "name": "CSM Oradea", "city": "Oradea", "region": "SR5" },
+    { "name": "CS Warriors Sălard", "city": "Sălard", "region": "SR5" },
+    { "name": "ACS SBS Salonta", "city": "Salonta", "region": "SR5" },
+    { "name": "CSS CN Teodor Neș Salonta", "city": "Salonta", "region": "SR5" },
+    { "name": "U-BT", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "BeSport Basketball", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "RoBo Sports", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "Hoop Dreams Cluj-Napoca", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "Wild Magicians Cluj", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "ACS Urban Basketball Cluj-Napoca", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "Napoca Wolves", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "Smart Basketball Team Cluj", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "LA Baschet Cluj-Napoca", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "LPS Cluj-Napoca", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "CSS Viitorul Cluj-Napoca", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "Academia Transilvania Warriors", "city": "Cluj-Napoca", "region": "SR6" },
+    { "name": "ASC Lucky Dragons", "city": null, "region": "SR6" },
+    { "name": "Turda Wolves", "city": "Turda", "region": "SR6" },
+    { "name": "ACS Gladius Târgu Mureș", "city": "Târgu Mureș", "region": "SR6" },
+    { "name": "BC Sirius Târgu Mureș", "city": "Târgu Mureș", "region": "SR6" },
+    { "name": "LPS Târgu Mureș", "city": "Târgu Mureș", "region": "SR6" },
+    { "name": "CSM Târgu Mureș", "city": "Târgu Mureș", "region": "SR6" }
+  ],
+  "categories": [
+    {
+      "code": "U10M", "name": "U10 Masculin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa 1 (SR5)", "region": "SR5", "teams": [
+          ["LPS Satu Mare", "LPS Satu Mare"],
+          ["CSS Sighet", "CSS Sighet"],
+          ["ACS Baschet Star 2017 Dacia", "ACS Baschet Star"] ] },
+        { "name": "Grupa 2 (SR5)", "region": "SR5", "teams": [
+          ["Valbon Arad", "Valbon Arad"],
+          ["ACS Baschet Star 2018 Dacia", "ACS Baschet Star"],
+          ["ACS Baschet Star 2017 Oltea", "ACS Baschet Star"],
+          ["ACS Baschet Star 2017 Generala 11", "ACS Baschet Star"] ] },
+        { "name": "Grupa 3 (SR5)", "region": "SR5", "teams": [
+          ["LPS Bihorul Oradea", "LPS Bihorul Oradea"],
+          ["Academia de Baschet Arad", "CS Academia de Baschet Arad"],
+          ["New Generation Lime", "New Generation Oradea"],
+          ["ACS Baschet Star 2017 Betel", "ACS Baschet Star"] ] },
+        { "name": "Grupa 1 (SR6)", "region": "SR6", "teams": [
+          ["BeSport Basketball", "BeSport Basketball"],
+          ["RoBo Sports", "RoBo Sports"],
+          ["U-BT Gri", "U-BT"] ] },
+        { "name": "Grupa 2 (SR6)", "region": "SR6", "teams": [
+          ["ACS Gladius Târgu Mureș", "ACS Gladius Târgu Mureș"],
+          ["Turda Wolves", "Turda Wolves"],
+          ["ASC Lucky Dragons", "ASC Lucky Dragons"] ] },
+        { "name": "Grupa 3 (SR6)", "region": "SR6", "teams": [
+          ["U-BT Alb", "U-BT"],
+          ["Hoop Dreams Cluj-Napoca", "Hoop Dreams Cluj-Napoca"],
+          ["Wild Magicians Cluj", "Wild Magicians Cluj"] ] }
+      ]
+    },
+    {
+      "code": "U10F", "name": "U10 Feminin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa 1", "region": "SR6", "teams": [
+          ["ACS Gladius Târgu Mureș", "ACS Gladius Târgu Mureș"],
+          ["LA Baschet 2", "LA Baschet Cluj-Napoca"],
+          ["Smart Basketball Team Cluj", "Smart Basketball Team Cluj"] ] },
+        { "name": "Grupa 2", "region": "SR6", "teams": [
+          ["LPS Cluj-Napoca", "LPS Cluj-Napoca"],
+          ["LA Baschet 1", "LA Baschet Cluj-Napoca"],
+          ["Wild Magicians Cluj", "Wild Magicians Cluj"] ] }
+      ]
+    },
+    {
+      "code": "U12M", "name": "U12 Masculin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa 1 (SR5)", "region": "SR5", "teams": [
+          ["LPS Satu Mare", "LPS Satu Mare"],
+          ["CS Wildcats Baia Mare", "CS Wildcats Baia Mare"],
+          ["CSS Sighet", "CSS Sighet"] ] },
+        { "name": "Grupa 2 (SR5)", "region": "SR5", "teams": [
+          ["Victoria Nădlac", "Victoria Nădlac"],
+          ["Valbon Arad", "Valbon Arad"],
+          ["ACS Baschet Star 2015 A", "ACS Baschet Star"],
+          ["ACS Baschet Star 2016", "ACS Baschet Star"] ] },
+        { "name": "Grupa 3 (SR5)", "region": "SR5", "teams": [
+          ["LPS Bihorul Oradea", "LPS Bihorul Oradea"],
+          ["New Generation Mov", "New Generation Oradea"],
+          ["Academia de Baschet Arad", "CS Academia de Baschet Arad"],
+          ["ACS Baschet Star 2015 B", "ACS Baschet Star"] ] },
+        { "name": "Grupa 1 (SR6)", "region": "SR6", "notes": "Târgu Mureș", "teams": [
+          ["ACS Gladius Târgu Mureș", "ACS Gladius Târgu Mureș"],
+          ["BC Sirius Târgu Mureș", "BC Sirius Târgu Mureș"],
+          ["LPS Târgu Mureș", "LPS Târgu Mureș"],
+          ["ASC Lucky Dragons", "ASC Lucky Dragons"] ] },
+        { "name": "Grupa 2 (SR6)", "region": "SR6", "teams": [
+          ["BeSport Basketball", "BeSport Basketball"],
+          ["Turda Wolves", "Turda Wolves"],
+          ["U-BT Roșu", "U-BT"] ] },
+        { "name": "Grupa 3 (SR6)", "region": "SR6", "teams": [
+          ["ACS Urban Basketball Cluj-Napoca", "ACS Urban Basketball Cluj-Napoca"],
+          ["Hoop Dreams Cluj-Napoca", "Hoop Dreams Cluj-Napoca"],
+          ["U-BT 1 Gri", "U-BT"],
+          ["U-BT 2 Gri", "U-BT"] ] },
+        { "name": "Grupa 4 (SR6)", "region": "SR6", "teams": [
+          ["Napoca Wolves", "Napoca Wolves"],
+          ["U-BT Alb", "U-BT"],
+          ["Wild Magicians Cluj", "Wild Magicians Cluj"] ] }
+      ]
+    },
+    {
+      "code": "U12F", "name": "U12 Feminin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa A", "region": "SR5", "notes": "Semifinale și finale (2 meciuri / echipă)", "teams": [
+          ["CS Warriors Sălard", "CS Warriors Sălard"],
+          ["ACS SBS Salonta", "ACS SBS Salonta"],
+          ["CN Mihai Eminescu Oradea", "CN Mihai Eminescu Oradea"],
+          ["CS Academia de Baschet Arad", "CS Academia de Baschet Arad"] ] },
+        { "name": "Grupa B", "region": null, "notes": "Semifinale și finale (2 meciuri / echipă)", "teams": [
+          ["BC Sirius Târgu Mureș", "BC Sirius Târgu Mureș"],
+          ["Smart Basketball Team Cluj", "Smart Basketball Team Cluj"],
+          ["LA Baschet Cluj-Napoca", "LA Baschet Cluj-Napoca"],
+          ["CS Wildcats Baia Mare", "CS Wildcats Baia Mare"] ] },
+        { "name": "Grupa C", "region": "SR6", "notes": "Fiecare cu fiecare", "teams": [
+          ["ACS Gladius Târgu Mureș", "ACS Gladius Târgu Mureș"],
+          ["Hoop Dreams Cluj-Napoca", "Hoop Dreams Cluj-Napoca"],
+          ["LPS Cluj-Napoca", "LPS Cluj-Napoca"] ] }
+      ]
+    },
+    {
+      "code": "U13M", "name": "U13 Masculin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa A", "region": null, "notes": "Fiecare cu fiecare", "teams": [
+          ["CSS Viitorul Cluj-Napoca", "CSS Viitorul Cluj-Napoca"],
+          ["ACS Gladius Târgu Mureș", "ACS Gladius Târgu Mureș"],
+          ["U-BT 1 Albastru", "U-BT"] ] },
+        { "name": "Grupa B", "region": "SR5", "notes": "Fiecare cu fiecare", "teams": [
+          ["CSM Sighet", "CSM Sighet"],
+          ["Valbon Arad", "Valbon Arad"],
+          ["CSS CN Teodor Neș Salonta", "CSS CN Teodor Neș Salonta"] ] },
+        { "name": "Grupa C", "region": "SR6", "notes": "Semifinale și finale (2 meciuri / echipă)", "teams": [
+          ["U-BT 2 Albastru", "U-BT"],
+          ["U-BT Gri", "U-BT"],
+          ["BeSport Basketball", "BeSport Basketball"],
+          ["RoBo Sports", "RoBo Sports"] ] }
+      ]
+    },
+    {
+      "code": "U14M", "name": "U14 Masculin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa 1", "region": "SR5", "teams": [
+          ["CS Wildcats Baia Mare", "CS Wildcats Baia Mare"],
+          ["CS Wildcats Baia Mare (U16F)", "CS Wildcats Baia Mare"],
+          ["Școala Gimnazială Nr. 9 Borșa", "Școala Gimnazială Nr. 9 Borșa"],
+          ["CSM Oradea (U16F)", "CSM Oradea"] ] },
+        { "name": "Grupa 2", "region": null, "teams": [
+          ["Baschet Club Best Arad", "Baschet Club Best Arad"],
+          ["Valbon Arad", "Valbon Arad"],
+          ["U-BT Gri", "U-BT"] ] },
+        { "name": "Grupa 3", "region": "SR6", "teams": [
+          ["U-BT Verde", "U-BT"],
+          ["U-BT Brâncuși", "U-BT"],
+          ["CSM Târgu Mureș", "CSM Târgu Mureș"],
+          ["Academia Transilvania Warriors", "Academia Transilvania Warriors"] ] }
+      ]
+    },
+    {
+      "code": "U14F", "name": "U14 Feminin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa unică", "region": null, "notes": "Tur-retur în 5 turnee", "teams": [
+          ["New Generation Oradea", "New Generation Oradea"],
+          ["Academia Transilvania Warriors", "Academia Transilvania Warriors"],
+          ["ACS Eko Sighet", "ACS Eko Sighet"],
+          ["CSS CN Teodor Neș Salonta", "CSS CN Teodor Neș Salonta"] ] }
+      ]
+    },
+    {
+      "code": "U15M", "name": "U15 Masculin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa unică", "region": "SR6", "notes": "5 meciuri / turneu, câte 2 / echipă", "teams": [
+          ["BeSport Basketball", "BeSport Basketball"],
+          ["U-BT Brâncuși", "U-BT"],
+          ["RoBo Sports", "RoBo Sports"],
+          ["U-BT Verde", "U-BT"],
+          ["U-BT Gri", "U-BT"] ] }
+      ]
+    },
+    {
+      "code": "U16M", "name": "U16 Masculin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa unică", "region": null, "notes": "Tur-retur în 3 turnee", "teams": [
+          ["CS Wildcats Baia Mare", "CS Wildcats Baia Mare"],
+          ["Valbon Arad", "Valbon Arad"],
+          ["U-BT Verde", "U-BT"],
+          ["U-BT Gri", "U-BT"] ] }
+      ]
+    },
+    {
+      "code": "U18M", "name": "U18 Masculin", "period": "Noiembrie 2026",
+      "groups": [
+        { "name": "Grupa A", "region": null, "teams": [
+          ["ASC Lucky Dragons", "ASC Lucky Dragons"],
+          ["U-BT Verde", "U-BT"],
+          ["Academia Transilvania Warriors", "Academia Transilvania Warriors"] ] },
+        { "name": "Grupa B", "region": null, "teams": [
+          ["CSS Viitorul Cluj-Napoca", "CSS Viitorul Cluj-Napoca"],
+          ["U-BT Verde U18", "U-BT"],
+          ["Valbon Arad", "Valbon Arad"] ] }
+      ]
+    }
+  ]
+}
