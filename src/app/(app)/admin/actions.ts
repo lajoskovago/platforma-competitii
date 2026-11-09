@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseAdmin, createSupabaseMailer, createSupabaseServer } from "@/lib/supabase/server";
 import { authEmailError, dbError, str, type ActionState } from "@/lib/action-state";
 import { bucharestToISO } from "@/lib/format";
 
@@ -213,7 +213,7 @@ export async function resendInvite(_: ActionState, fd: FormData): Promise<Action
   const neverSignedIn = !data.user?.last_sign_in_at;
   const { error } = neverSignedIn
     ? await admin.auth.admin.inviteUserByEmail(email)
-    : await (await createSupabaseServer()).auth.resetPasswordForEmail(email);
+    : await createSupabaseMailer().auth.resetPasswordForEmail(email);
   if (error) return { error: error.message };
   return { ok: neverSignedIn ? "Invitația a fost retrimisă." : "Emailul de resetare a parolei a fost trimis." };
 }

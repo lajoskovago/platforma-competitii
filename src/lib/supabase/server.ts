@@ -34,3 +34,16 @@ export function createSupabaseAdmin() {
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }
+
+/**
+ * Stateless client for sending password-reset emails. Uses the implicit flow so
+ * the emailed link works on any device (the default PKCE flow would require
+ * opening it in the same browser that requested it).
+ */
+export function createSupabaseMailer() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false, flowType: "implicit" } },
+  );
+}
