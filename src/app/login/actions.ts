@@ -20,7 +20,9 @@ export async function requestPasswordReset(_: ActionState, fd: FormData): Promis
   if (!email) return { error: "Completați emailul." };
   const supabase = await createSupabaseServer();
   // The email template builds the link (see supabase/templates/recovery.html).
-  await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  // Never reveal to the visitor whether the account exists, but log failures for admins (Render logs).
+  if (error) console.error("[password-reset] failed", email, error.status, error.message);
   // Same answer whether or not the account exists.
   return { ok: "Dacă adresa are cont, veți primi un email cu linkul de resetare." };
 }
