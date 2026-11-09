@@ -144,6 +144,20 @@ select pg_temp.expect_fail(format($q$select respond_to_nomination((select id fro
 update game_officials set status='accepted' where position='referee_1';
 select pg_temp.check((select status from game_officials where position='referee_1' and game_id=(select v from ids where k='ng'))='pending', 'official cannot update directly');
 
+-- coaches / club admins cannot nominate, change or remove officials (even on their own team's game)
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');  -- U-BT club admin, U-BT plays this game
+select pg_temp.expect_fail(format($q$insert into game_officials (game_id, position, user_id) values (%L,'timekeeper','00000000-0000-0000-0000-0000000000f6')$q$,
+  (select v from ids where k='ng')), 'club admin nominates');
+update game_officials set user_id='00000000-0000-0000-0000-0000000000f5' where game_id=(select v from ids where k='ng') and position='scorer';
+delete from game_officials where game_id=(select v from ids where k='ng');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');  -- coach
+select pg_temp.expect_fail(format($q$insert into game_officials (game_id, position, user_id) values (%L,'timekeeper','00000000-0000-0000-0000-0000000000f6')$q$,
+  (select v from ids where k='ng')), 'coach nominates');
+reset role;
+select pg_temp.check((select count(*) from game_officials where game_id=(select v from ids where k='ng')) = 2, 'club admin could not delete nominations');
+select pg_temp.check((select user_id from game_officials where game_id=(select v from ids where k='ng') and position='scorer') = '00000000-0000-0000-0000-0000000000f6', 'club admin could not change nominee');
+set local role authenticated;
+
 -- coach of involved team sees the officials' names, not contacts
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
 select pg_temp.check((select count(*) from game_officials where game_id=(select v from ids where k='ng'))=2, 'club admin sees nominations');
