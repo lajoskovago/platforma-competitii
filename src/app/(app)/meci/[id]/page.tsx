@@ -106,9 +106,9 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
 
       {/* Officials */}
       <SectionTitle>Arbitri</SectionTitle>
-      <OfficialsGrid positions={[...REFEREE_POSITIONS]} g={g} />
+      <OfficialsGrid positions={[...REFEREE_POSITIONS]} g={g} admin={canNominate} />
       <SectionTitle>Oficiali de masă</SectionTitle>
-      <OfficialsGrid positions={[...TABLE_POSITIONS]} g={g} />
+      <OfficialsGrid positions={[...TABLE_POSITIONS]} g={g} admin={canNominate} />
 
       {canNominate && <NominationEditor g={g} />}
 
@@ -145,9 +145,15 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
 
 type G = NonNullable<Awaited<ReturnType<typeof getGame>>>;
 
-function OfficialsGrid({ positions, g }: { positions: OfficialPosition[]; g: G }) {
+function OfficialsGrid({ positions, g, admin }: { positions: OfficialPosition[]; g: G; admin: boolean }) {
   const filled = positions.filter((p) => g.nominations.some((n) => n.position === p));
-  if (!filled.length) return <p className="text-sm text-slate-500">Nicio nominalizare încă.</p>;
+  if (!filled.length) {
+    return (
+      <p className="text-sm text-slate-500">
+        {admin ? "Nicio nominalizare încă." : "Nicio nominalizare confirmată încă."}
+      </p>
+    );
+  }
   return (
     <Card className="space-y-2">
       {filled.map((p) => {

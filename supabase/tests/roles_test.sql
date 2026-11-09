@@ -142,7 +142,11 @@ select pg_temp.expect_fail(format($q$select respond_to_nomination((select id fro
   (select v from ids where k='ng')), 'answer others nomination');
 -- cannot change nominations directly
 update game_officials set status='accepted' where position='referee_1';
+-- (another official's pending nomination is not even visible to this official)
+select pg_temp.check((select count(*) from game_officials where position='referee_1' and game_id=(select v from ids where k='ng'))=0, 'official does not see others pending nomination');
+reset role;
 select pg_temp.check((select status from game_officials where position='referee_1' and game_id=(select v from ids where k='ng'))='pending', 'official cannot update directly');
+set local role authenticated;
 
 -- coaches / club admins cannot nominate, change or remove officials (even on their own team's game)
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');  -- U-BT club admin, U-BT plays this game
@@ -160,7 +164,18 @@ set local role authenticated;
 
 -- coach of involved team sees the officials' names, not contacts
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
-select pg_temp.check((select count(*) from game_officials where game_id=(select v from ids where k='ng'))=2, 'club admin sees nominations');
+-- club admin sees nothing yet: referee_1 is pending, scorer was refused
+select pg_temp.check((select count(*) from game_officials where game_id=(select v from ids where k='ng'))=0, 'club admin does not see pending / refused nominations');
+-- referee confirms -> now visible to the club admin, the refusal stays hidden
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f5');
+select respond_to_nomination((select id from game_officials where game_id=(select v from ids where k='ng') and position='referee_1'),'accepted');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+select pg_temp.check((select count(*) from game_officials where game_id=(select v from ids where k='ng'))=1, 'club admin sees the accepted nomination');
+select pg_temp.check((select count(*) from game_officials where game_id=(select v from ids where k='ng') and status='rejected')=0, 'refusal hidden from club admin');
+-- the regional admin of the game still sees everything
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000a6');
+select pg_temp.check((select count(*) from game_officials where game_id=(select v from ids where k='ng'))=2, 'regional admin sees all nominations');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
 select pg_temp.check((select count(*) from profile_names where id='00000000-0000-0000-0000-0000000000f5')=1, 'names visible');
 select pg_temp.check((select count(*) from profiles where id='00000000-0000-0000-0000-0000000000f5')=0, 'referee contact hidden');
 
