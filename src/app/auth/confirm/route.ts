@@ -1,5 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { publicUrl } from "@/lib/origin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 /** Landing point for links in invitation / password reset emails. */
@@ -13,10 +14,11 @@ export async function GET(request: NextRequest) {
   if (tokenHash && type) {
     const supabase = await createSupabaseServer();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
-    if (!error) return NextResponse.redirect(new URL(next, request.url));
+    if (!error) return NextResponse.redirect(publicUrl(request, next));
+    console.error("[auth/confirm] verifyOtp failed", type, error.message);
   }
 
-  const url = new URL("/login", request.url);
+  const url = publicUrl(request, "/login");
   url.searchParams.set("eroare", "link");
   return NextResponse.redirect(url);
 }

@@ -12,3 +12,16 @@ export function str(fd: FormData, key: string) {
   const v = fd.get(key);
   return typeof v === "string" ? v.trim() : "";
 }
+
+/** Message for Supabase Auth errors when sending invitation / reset emails. */
+export function authEmailError(error: { message: string; status?: number; code?: string }) {
+  const m = error.message.toLowerCase();
+  if (error.code === "over_email_send_rate_limit" || error.status === 429 || m.includes("rate limit")) {
+    return "S-au trimis prea multe emailuri într-un timp scurt. Încercați din nou peste câteva minute.";
+  }
+  if (m.includes("already")) return "Există deja un cont cu acest email.";
+  if (m.includes("smtp") || m.includes("sending") || m.includes("email")) {
+    return "Emailul nu a putut fi trimis. Verificați adresa sau contactați administratorul.";
+  }
+  return error.message;
+}

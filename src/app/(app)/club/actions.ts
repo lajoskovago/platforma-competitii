@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
-import { dbError, str, type ActionState } from "@/lib/action-state";
+import { authEmailError, dbError, str, type ActionState } from "@/lib/action-state";
 
 /** The team must belong to a club the current user administers. */
 async function ensureClubTeam(teamId: string) {
@@ -37,7 +37,7 @@ export async function inviteCoach(_: ActionState, fd: FormData): Promise<ActionS
   } else {
     if (!fullName) return { error: "Completați numele antrenorului." };
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { data: { full_name: fullName } });
-    if (error) return { error: error.message };
+    if (error) return { error: authEmailError(error) };
     userId = data.user.id;
     await admin.from("profiles").update({ full_name: fullName, phone: str(fd, "phone") || null }).eq("id", userId);
   }

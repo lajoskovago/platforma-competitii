@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { publicUrl } from "@/lib/origin";
 
 const PUBLIC_PATHS = ["/login", "/auth/confirm", "/am-uitat-parola", "/inregistrare-oficiali"];
 
@@ -31,10 +32,7 @@ export async function proxy(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + "/"));
 
   if (!data?.claims && !isPublic) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = "";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(publicUrl(request, "/login"));
   }
 
   return response;

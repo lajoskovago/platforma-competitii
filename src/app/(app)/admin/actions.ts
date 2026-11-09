@@ -4,7 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
-import { dbError, str, type ActionState } from "@/lib/action-state";
+import { authEmailError, dbError, str, type ActionState } from "@/lib/action-state";
 import { bucharestToISO } from "@/lib/format";
 
 const region = (v: string) => (v === "SR5" || v === "SR6" ? v : null);
@@ -190,8 +190,7 @@ export async function inviteUser(_: ActionState, fd: FormData): Promise<ActionSt
   const admin = createSupabaseAdmin();
   const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { data: { full_name: fullName } });
   if (error) {
-    if (error.message.toLowerCase().includes("already")) return { error: "Există deja un cont cu acest email." };
-    return { error: error.message };
+    return { error: authEmailError(error) };
   }
   const { error: pErr } = await admin
     .from("profiles")

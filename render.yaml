@@ -24,3 +24,7 @@ services:
         sync: false
       - key: SUPABASE_SECRET_KEY
         sync: false
+      # Optional: public address, e.g. https://competitii-regiunea5.onrender.com
+      # (redirects otherwise use the proxy's forwarded host)
+      - key: SITE_URL
+        sync: false
