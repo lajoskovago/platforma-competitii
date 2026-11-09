@@ -6,6 +6,7 @@ import { Badge, Card, Empty, LinkButton, PageTitle, SectionTitle, inputClass } f
 import { canActForTeam, canAdminRegion, requireUser, type CurrentUser } from "@/lib/auth";
 import { GROUP_STATUS, PROPOSAL_STATUS, formatDateRange, formatDateTime, formatUntilDay, mapsLink } from "@/lib/format";
 import { getAutoConfirmUntil, getGroupDetail, type GroupDetail } from "@/lib/queries";
+import { GroupAdminPanel } from "./group-admin-panel";
 import { adminConfirmProposal, adminUnconfirmGroup, respondToProposal, withdrawProposal } from "../actions";
 
 export default async function GroupPage({ params }: PageProps<"/grupa/[id]">) {
@@ -243,6 +244,8 @@ export default async function GroupPage({ params }: PageProps<"/grupa/[id]">) {
           </div>
         ))}
       </Card>
+
+      {canAdmin && <GroupAdminPanel detail={detail} user={user} />}
 
       {past.length > 0 && (
         <details className="mt-6">
