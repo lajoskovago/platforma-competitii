@@ -54,7 +54,7 @@ export default async function ClubSignUpPage() {
         </ActionForm>
       </Card>
       <p className="mt-4 text-center text-sm text-slate-600">
-        Clubul sau echipa lipsește din listă? Contactați administratorul regiunii.
+        Echipa lipsește din listă? Echipele din Campionatul Național le adaugă administratorul clubului, din „Clubul meu”.
       </p>
       <Link href="/login" className="mt-2 block py-2 text-center text-sm text-slate-600 underline">
         Am deja cont – intră în cont

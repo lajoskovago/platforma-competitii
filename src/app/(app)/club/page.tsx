@@ -5,19 +5,20 @@ import { Badge, Card, Field, PageTitle, SectionTitle, inputClass } from "@/compo
 import { requireUser } from "@/lib/auth";
 import { getNames } from "@/lib/queries";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { inviteCoach, removeCoach } from "./actions";
+import { createNationalTeam, deleteNationalTeam, inviteCoach, removeCoach } from "./actions";
 
 export default async function ClubPage() {
   const user = await requireUser();
   if (user.managedClubIds.length === 0) redirect("/");
   const supabase = await createSupabaseServer();
 
-  const [{ data: clubs }, { data: teams }] = await Promise.all([
+  const [{ data: clubs }, { data: teams }, { data: nationalCats }] = await Promise.all([
     supabase.from("clubs").select("id, name, city, region").in("id", user.managedClubIds).order("name"),
     supabase
       .from("teams")
       .select("id, name, club_id, category:categories(code, name, scope, sort_order), team_coaches(user_id), group_teams(group_id)")
       .in("club_id", user.managedClubIds),
+    supabase.from("categories").select("id, code, name").eq("scope", "national").order("sort_order"),
   ]);
   const names = await getNames((teams ?? []).flatMap((t) => t.team_coaches.map((c) => c.user_id)));
   const sorted = [...(teams ?? [])].sort(
@@ -39,7 +40,10 @@ export default async function ClubPage() {
             <SectionTitle>Echipe ({clubTeams.length})</SectionTitle>
             <Card className="divide-y divide-slate-100 p-0!">
               {clubTeams.length === 0 && (
-                <p className="px-4 py-3 text-sm text-slate-500">Echipele sunt adăugate de administratori.</p>
+                <p className="px-4 py-3 text-sm text-slate-500">
+                  Nicio echipă încă. Adăugați mai jos echipele din Campionatul Național; echipele din campionatele
+                  regionale sunt adăugate de administratori.
+                </p>
               )}
               {clubTeams.map((t) => (
                 <div key={t.id} className="px-4 py-3">
@@ -54,6 +58,12 @@ export default async function ClubPage() {
                       <Link href={`/grupa/${t.group_teams[0].group_id}`} className="py-1 text-sm text-orange-700">
                         Grupa ›
                       </Link>
+                    )}
+                    {t.category?.scope === "national" && (
+                      <ActionForm action={deleteNationalTeam} className="" confirm={`Ștergeți echipa ${t.name}?`}>
+                        <input type="hidden" name="team_id" value={t.id} />
+                        <button className="min-h-9 rounded px-2 text-xs text-red-700 hover:bg-red-50">Șterge</button>
+                      </ActionForm>
                     )}
                   </div>
                   {t.team_coaches.length === 0 ? (
@@ -72,6 +82,29 @@ export default async function ClubPage() {
                   )}
                 </div>
               ))}
+            </Card>
+
+            <SectionTitle>Adaugă o echipă în Campionatul Național</SectionTitle>
+            <Card>
+              <ActionForm action={createNationalTeam} resetOnSuccess>
+                <input type="hidden" name="club_id" value={club.id} />
+                <Field label="Categoria">
+                  <select name="category_id" required defaultValue="" className={inputClass}>
+                    <option value="" disabled>
+                      Alegeți categoria…
+                    </option>
+                    {(nationalCats ?? []).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.code} – {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Numele echipei" hint="Cum apare în programul meciurilor">
+                  <input name="name" required defaultValue={club.name} className={inputClass} />
+                </Field>
+                <SubmitButton variant="secondary">+ Adaugă echipa</SubmitButton>
+              </ActionForm>
             </Card>
 
             {clubTeams.length > 0 && (

@@ -34,10 +34,35 @@ export function ClubTeamFields({ clubs, teams }: { clubs: Club[]; teams: Team[] 
               {c.city ? ` (${c.city})` : ""}
             </option>
           ))}
+          <option value="new">+ Clubul meu nu este în listă</option>
         </select>
       </Field>
 
-      {club && (
+      {club === "new" && (
+        <div className="space-y-3 rounded-lg border border-dashed border-slate-300 p-3">
+          <p className="text-xs text-slate-500">
+            Clubul va fi creat, iar dvs. deveniți administratorul lui. După autentificare adăugați echipele clubului din
+            Campionatul Național în pagina „Clubul meu”.
+          </p>
+          <Field label="Numele clubului">
+            <input name="new_club_name" required minLength={3} placeholder="ex. CS Exemplu Oradea" className={inputClass} />
+          </Field>
+          <Field label="Oraș">
+            <input name="new_club_city" required className={inputClass} />
+          </Field>
+          <Field label="Regiunea">
+            <select name="new_club_region" required defaultValue="" className={inputClass}>
+              <option value="" disabled>
+                Alegeți…
+              </option>
+              <option value="SR5">Regiunea 5 (SR5)</option>
+              <option value="SR6">Regiunea 6 (SR6)</option>
+            </select>
+          </Field>
+        </div>
+      )}
+
+      {club && club !== "new" && (
         <Field
           label="Echipa pe care o antrenați"
           hint="Dacă nu alegeți o echipă, contul devine administrator al clubului (vede toate echipele și poate adăuga antrenori)."

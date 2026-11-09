@@ -64,3 +64,38 @@ export async function removeCoach(_: ActionState, fd: FormData): Promise<ActionS
   refresh();
   return {};
 }
+
+/** Club admin: add a team in the NATIONAL championship (RLS: own club, national category). */
+export async function createNationalTeam(_: ActionState, fd: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  const clubId = str(fd, "club_id");
+  const categoryId = str(fd, "category_id");
+  const name = str(fd, "name");
+  if (!user.managedClubIds.includes(clubId)) return { error: "Nu sunteți administratorul acestui club." };
+  if (!categoryId || !name) return { error: "Alegeți categoria și numele echipei." };
+  const supabase = await createSupabaseServer();
+  const { error } = await supabase.from("teams").insert({ club_id: clubId, category_id: categoryId, name });
+  if (error) {
+    if (error.code === "23505") return { error: "Există deja o echipă cu acest nume în această categorie." };
+    return dbError(error);
+  }
+  refresh();
+  return { ok: `Echipa „${name}” a fost adăugată.` };
+}
+
+/** Club admin: delete a national team that has no games yet. */
+export async function deleteNationalTeam(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireUser();
+  const teamId = str(fd, "team_id");
+  const supabase = await createSupabaseServer();
+  const { count } = await supabase
+    .from("games")
+    .select("id", { count: "exact", head: true })
+    .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`);
+  if (count) return { error: "Echipa are meciuri și nu poate fi ștearsă." };
+  const { data, error } = await supabase.from("teams").delete().eq("id", teamId).select("id");
+  if (error) return dbError(error);
+  if (!data?.length) return { error: "Nu puteți șterge această echipă." };
+  refresh();
+  return {};
+}
