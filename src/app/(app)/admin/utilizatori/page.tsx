@@ -4,11 +4,13 @@ import { Chips } from "@/components/game-list";
 import { Badge, Card, Field, PageTitle, SectionTitle, inputClass } from "@/components/ui";
 import { UserRoleFields } from "@/components/user-role-fields";
 import { requireAdmin } from "@/lib/auth";
+import { formatDateTime, sevenDaysAgo } from "@/lib/format";
 import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
 import { inviteUser } from "../actions";
 
 const TYPES = [
   { key: "", label: "Toți" },
+  { key: "new", label: "Noi (7 zile)" },
   { key: "admin", label: "Administratori" },
   { key: "club", label: "Admin club" },
   { key: "coach", label: "Antrenori" },
@@ -32,8 +34,10 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
 
   const lastSignIn = new Map((authUsers?.users ?? []).map((u) => [u.id, u.last_sign_in_at]));
   const needle = q.toLowerCase();
+  const weekAgo = sevenDaysAgo();
   const list = (profiles ?? []).filter((p) => {
     if (needle && !p.full_name.toLowerCase().includes(needle) && !p.email.toLowerCase().includes(needle)) return false;
+    if (tip === "new") return new Date(p.created_at).getTime() > weekAgo;
     if (tip === "admin") return p.role !== "user";
     if (tip === "club") return (managers ?? []).some((m) => m.user_id === p.id);
     if (tip === "coach") return (coaches ?? []).some((c) => c.user_id === p.id);
@@ -41,6 +45,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
     if (tip === "table") return p.is_table_official;
     return true;
   });
+  if (tip === "new") list.sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   return (
     <>
@@ -121,7 +126,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
                   {!active && <Badge tone="amber">invitat</Badge>}
                 </span>
               </div>
-              <div className="text-xs text-slate-500">{p.email}</div>
+              <div className="text-xs text-slate-500">
+                {p.email} · creat {formatDateTime(p.created_at)}
+              </div>
               {(teams.length > 0 || clubsOf.length > 0) && (
                 <div className="mt-1 text-xs text-slate-600">
                   {clubsOf.map((c) => `🏢 ${c.club?.name}`).join(" · ")}

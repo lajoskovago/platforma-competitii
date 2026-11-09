@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { publicUrl } from "@/lib/origin";
 import { supabaseUrl } from "@/lib/supabase/url";
 
-const PUBLIC_PATHS = ["/login", "/auth/confirm", "/am-uitat-parola", "/inregistrare-oficiali"];
+const PUBLIC_PATHS = ["/login", "/auth/confirm", "/am-uitat-parola", "/inregistrare-oficiali", "/inregistrare-antrenori"];
 
 /**
  * Refreshes the Supabase session cookie on every request and sends

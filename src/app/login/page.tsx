@@ -37,12 +37,15 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <Link href="/am-uitat-parola" className="mt-4 py-2 text-center text-sm text-slate-600 underline">
         Am uitat parola
       </Link>
-      <p className="mt-6 text-center text-xs text-slate-400">
-        Conturile pentru cluburi și antrenori sunt create de administratori.
-      </p>
-      <Link href="/inregistrare-oficiali" className="mt-2 py-2 text-center text-sm text-orange-700 underline">
-        Sunteți arbitru sau oficial de masă? Înregistrați-vă aici
-      </Link>
+      <div className="mt-6 space-y-1 border-t border-slate-200 pt-4 text-center text-sm">
+        <p className="text-slate-500">Nu aveți cont?</p>
+        <Link href="/inregistrare-antrenori" className="block py-2 text-orange-700 underline">
+          Antrenor sau administrator de club – înregistrare
+        </Link>
+        <Link href="/inregistrare-oficiali" className="block py-2 text-orange-700 underline">
+          Arbitru sau oficial de masă – înregistrare
+        </Link>
+      </div>
     </main>
   );
 }

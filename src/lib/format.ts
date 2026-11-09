@@ -85,6 +85,10 @@ export function formatUntilDay(ts: string) {
   );
 }
 
+export function sevenDaysAgo() {
+  return Date.now() - 7 * 24 * 3600_000;
+}
+
 /** Games that started less than 3 hours ago still count as "upcoming". */
 export function upcomingCutoff() {
   return Date.now() - 3 * 3600_000;
