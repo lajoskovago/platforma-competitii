@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { isImpersonating } from "@/lib/impersonation";
 import { stopImpersonation } from "./impersonare/actions";
 import { signOut } from "../login/actions";
+import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await requireUser();
@@ -28,7 +29,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <Link href="/" className="flex items-center gap-2 py-1 font-bold">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-600 text-base">🏀</span>
             <span className="leading-tight">
-              Regiunea 5<span className="block text-[11px] font-normal text-slate-500">Competiții FRB</span>
+              {APP_NAME}<span className="block text-[11px] font-normal text-slate-500">{APP_TAGLINE}</span>
             </span>
           </Link>
           <form action={signOut}>

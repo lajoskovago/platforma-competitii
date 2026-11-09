@@ -4,6 +4,7 @@ import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Card, Field, inputClass } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { signIn } from "./actions";
+import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   if (await getCurrentUser()) redirect("/");
@@ -15,8 +16,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-2xl">
           🏀
         </div>
-        <h1 className="text-xl font-bold">Competiții Regiunea 5</h1>
-        <p className="text-sm text-slate-500">Federația Română de Baschet</p>
+        <h1 className="text-xl font-bold">{APP_NAME}</h1>
+        <p className="text-sm text-slate-500">{APP_TAGLINE}</p>
       </div>
       {eroare === "link" && (
         <p role="alert" className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">

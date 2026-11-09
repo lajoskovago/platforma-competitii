@@ -1,6 +1,6 @@
-# Competiții Regiunea 5 FRB
+# Platforma Competiții
 
-Web app for organising the regional basketball tournaments of Regiunea 5, Federația Română de Baschet.
+Web app for organising basketball competitions – the regional championships of SR5 and SR6 (FRB) and the national championship games of their clubs.
 Coaches log in, see their teams' groups, volunteer to organise a tournament (date + gym), the other teams
 accept/reject, the organiser publishes the game program and enters results.
 

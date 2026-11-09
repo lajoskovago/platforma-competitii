@@ -247,11 +247,11 @@ otp_expiry = 3600
 
 # Uncomment to customize email template
 [auth.email.template.invite]
-subject = "Invitație - Competiții Regiunea 5 FRB"
+subject = "Invitație - Platforma Competiții"
 content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.recovery]
-subject = "Resetare parolă - Competiții Regiunea 5 FRB"
+subject = "Resetare parolă - Platforma Competiții"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize notification email template

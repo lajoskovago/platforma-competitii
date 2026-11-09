@@ -40,7 +40,7 @@ export default async function HomePage() {
               .
             </>
           ) : (
-            " Contactați un administrator al Regiunii 5."
+            " Contactați administratorul clubului sau al regiunii."
           )}
         </Empty>
       ) : (

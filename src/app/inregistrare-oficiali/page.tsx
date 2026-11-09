@@ -2,8 +2,9 @@ import Link from "next/link";
 import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Card, Field, PageTitle, inputClass } from "@/components/ui";
 import { signUpOfficial } from "./actions";
+import { APP_NAME } from "@/lib/brand";
 
-export const metadata = { title: "Înregistrare arbitri și oficiali – Regiunea 5 FRB" };
+export const metadata = { title: `Înregistrare arbitri și oficiali – ${APP_NAME}` };
 
 export default function OfficialSignUpPage() {
   return (

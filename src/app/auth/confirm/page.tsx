@@ -2,8 +2,9 @@ import Link from "next/link";
 import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Card, PageTitle } from "@/components/ui";
 import { confirmEmailLink } from "./actions";
+import { APP_NAME } from "@/lib/brand";
 
-export const metadata = { title: "Confirmare – Competiții Regiunea 5 FRB" };
+export const metadata = { title: `Confirmare – ${APP_NAME}` };
 
 /** Landing page for links in invitation / password reset emails (token is used on button press). */
 export default async function ConfirmPage({ searchParams }: PageProps<"/auth/confirm">) {

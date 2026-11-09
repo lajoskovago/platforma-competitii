@@ -5,8 +5,9 @@ import { Card, Field, PageTitle, inputClass } from "@/components/ui";
 import { createSupabaseAdmin } from "@/lib/supabase/server";
 import { signUpClubMember } from "./actions";
 import { ClubTeamFields } from "./club-team-fields";
+import { APP_NAME } from "@/lib/brand";
 
-export const metadata = { title: "Înregistrare antrenori și cluburi – Regiunea 5 FRB" };
+export const metadata = { title: `Înregistrare antrenori și cluburi – ${APP_NAME}` };
 
 export default async function ClubSignUpPage() {
   await connection(); // render on every request: the club / team lists change
@@ -49,7 +50,7 @@ export default async function ClubSignUpPage() {
           <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
           <SubmitButton>Înregistrează-mă</SubmitButton>
           <p className="text-xs text-slate-500">
-            Înregistrările sunt verificate de administratorii Regiunii 5; conturile asociate greșit vor fi eliminate.
+            Înregistrările sunt verificate de administratori; conturile asociate greșit vor fi eliminate.
           </p>
         </ActionForm>
       </Card>
