@@ -16,6 +16,7 @@ const TYPES = [
   { key: "coach", label: "Antrenori" },
   { key: "referee", label: "Arbitri" },
   { key: "table", label: "Oficiali de masă" },
+  { key: "delegates", label: "Pot nominaliza" },
 ];
 
 export default async function AdminUsersPage({ searchParams }: PageProps<"/admin/utilizatori">) {
@@ -43,6 +44,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
     if (tip === "coach") return (coaches ?? []).some((c) => c.user_id === p.id);
     if (tip === "referee") return p.is_referee;
     if (tip === "table") return p.is_table_official;
+    if (tip === "delegates") return p.can_nominate;
     return true;
   });
   if (tip === "new") list.sort((a, b) => b.created_at.localeCompare(a.created_at));
@@ -123,6 +125,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
                   {p.role === "regional_admin" && <Badge tone="blue">admin {p.region}</Badge>}
                   {p.is_referee && <Badge tone="green">arbitru {p.region}</Badge>}
                   {p.is_table_official && <Badge tone="green">oficial {p.region}</Badge>}
+                  {p.can_nominate && <Badge tone="amber">nominalizează {p.region}</Badge>}
                   {!active && <Badge tone="amber">invitat</Badge>}
                 </span>
               </div>

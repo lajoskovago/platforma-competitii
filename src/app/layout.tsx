@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
+import { NavigationProgress } from "@/components/navigation-progress";
 import "./globals.css";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/brand";
 
@@ -19,7 +21,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ro" className={`${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900">{children}</body>
+      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900">
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

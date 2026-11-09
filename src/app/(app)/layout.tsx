@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth";
+import { isNominator, requireUser } from "@/lib/auth";
 import { isImpersonating } from "@/lib/impersonation";
 import { stopImpersonation } from "./impersonare/actions";
 import { signOut } from "../login/actions";
@@ -48,6 +48,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           {user.managedClubIds.length > 0 && <NavLink href="/club">Clubul meu</NavLink>}
           {user.isAdmin && <NavLink href="/admin">Regional</NavLink>}
           {(user.isAdmin || user.teamIds.size > 0) && <NavLink href="/national">Național</NavLink>}
+          {isNominator(user) && <NavLink href="/indisponibilitati">Indisponibilități</NavLink>}
           {user.isAdmin && (
             <>
               <NavLink href="/meciuri">Meciuri</NavLink>

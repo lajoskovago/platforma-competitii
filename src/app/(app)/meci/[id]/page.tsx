@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm, SubmitButton } from "@/components/action-form";
 import { NominationLine } from "@/components/officials";
+import { OfficialCombobox } from "@/components/official-combobox";
 import { Badge, Card, Field, LinkButton, PageTitle, SectionTitle, inputClass } from "@/components/ui";
-import { canAdminRegion, requireUser } from "@/lib/auth";
+import { canAdminRegion, canNominateRegion, requireUser } from "@/lib/auth";
 import {
   NOMINATION_STATUS,
   POSITION_LABEL,
@@ -29,7 +30,7 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
   const home = sideName(g, "home", g.home);
   const away = sideName(g, "away", g.away);
   const national = g.competition === "national";
-  const canNominate = canAdminRegion(user, g.gameRegion);
+  const canNominate = canNominateRegion(user, g.gameRegion);
   const canEditNational =
     national &&
     (canAdminRegion(user, g.region) ||
@@ -246,33 +247,31 @@ async function NominationEditor({ g }: { g: G }) {
         {all.map((pos) => {
           const isRef = (REFEREE_POSITIONS as readonly string[]).includes(pos);
           const current = g.nominations.find((n) => n.position === pos);
-          const options = regionPeople.filter((p) => (isRef ? p.is_referee : p.is_table_official));
+          const people = regionPeople.filter((p) => (isRef ? p.is_referee : p.is_table_official));
+          // keep the current nominee selectable even if no longer in the list (e.g. region changed)
+          if (current && !people.some((p) => p.id === current.user_id)) {
+            people.push({ id: current.user_id, full_name: current.name, region: null, is_referee: isRef, is_table_official: !isRef });
+          }
+          const options = people.map((p) => ({ id: p.id!, name: p.full_name ?? "", warnings: warn(p.id!) }));
           return (
             <ActionForm key={pos} action={setNomination} className="space-y-1">
               <input type="hidden" name="game_id" value={g.id} />
               <input type="hidden" name="position" value={pos} />
-              <label className="block text-sm font-medium text-slate-700" htmlFor={`sel-${pos}`}>
+              <div className="text-sm font-medium text-slate-700">
                 {POSITION_LABEL[pos]}
                 {current && (
                   <span className="ml-2 align-middle">
                     <Badge tone={NOMINATION_STATUS[current.status].tone}>{NOMINATION_STATUS[current.status].label}</Badge>
                   </span>
                 )}
-              </label>
-              <div className="flex gap-2">
-                <select id={`sel-${pos}`} name="user_id" defaultValue={current?.user_id ?? ""} className={inputClass}>
-                  <option value="">— neocupat —</option>
-                  {options.map((p) => {
-                    const w = warn(p.id!);
-                    return (
-                      <option key={p.id} value={p.id!}>
-                        {w.length ? "⚠️ " : ""}
-                        {p.full_name}
-                        {w.length ? ` (${w.join("; ")})` : ""}
-                      </option>
-                    );
-                  })}
-                </select>
+              </div>
+              <div className="flex items-start gap-2">
+                <OfficialCombobox
+                  name="user_id"
+                  label={POSITION_LABEL[pos]}
+                  options={options}
+                  defaultId={current?.user_id}
+                />
                 <SubmitButton variant="secondary" full={false}>
                   Salvează
                 </SubmitButton>

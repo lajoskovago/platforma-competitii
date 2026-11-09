@@ -21,6 +21,8 @@ export type CurrentUser = {
   isReferee: boolean;
   isTableOfficial: boolean;
   isOfficial: boolean;
+  /** delegated by the master admin to nominate referees / officials in their region */
+  canNominate: boolean;
   /** clubs this user administers */
   managedClubIds: string[];
   /** teams this user coaches or manages through a club */
@@ -36,7 +38,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const [{ data: profile }, { data: clubs }, { data: teamIds }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("email, full_name, phone, role, region, is_referee, is_table_official")
+      .select("email, full_name, phone, role, region, is_referee, is_table_official, can_nominate")
       .eq("id", auth.user.id)
       .single(),
     supabase.from("club_managers").select("club_id").eq("user_id", auth.user.id),
@@ -59,6 +61,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     isReferee,
     isTableOfficial,
     isOfficial: isReferee || isTableOfficial,
+    canNominate: !!profile?.can_nominate,
     managedClubIds: (clubs ?? []).map((c) => c.club_id),
     teamIds: new Set((teamIds as unknown as string[] | null) ?? []),
   };
@@ -87,6 +90,17 @@ export async function requireMaster() {
 export function canAdminRegion(user: CurrentUser, region: Region | null | undefined) {
   if (user.isMaster) return true;
   return user.isRegionalAdmin && (region == null || region === user.region);
+}
+
+/** Mirrors public.can_nominate_region(): admins of the region, or a nomination delegate of that region. */
+export function canNominateRegion(user: CurrentUser, region: Region | null | undefined) {
+  if (canAdminRegion(user, region)) return true;
+  return user.canNominate && (region == null || region === user.region);
+}
+
+/** Anyone who nominates somewhere (admins, delegates). */
+export function isNominator(user: CurrentUser) {
+  return user.isAdmin || user.canNominate;
 }
 
 /**

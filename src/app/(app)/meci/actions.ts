@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin, requireUser } from "@/lib/auth";
+import { isNominator, requireUser } from "@/lib/auth";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { dbError, str, type ActionState } from "@/lib/action-state";
 import { POSITION_LABEL, bucharestToISO, formatDateTime, type OfficialPosition } from "@/lib/format";
@@ -15,7 +15,8 @@ const TIME_RE = /^\d{2}:\d{2}$/;
 // Nominations (admins of the game's region; enforced by RLS)
 // ---------------------------------------------------------------------------
 export async function setNomination(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireAdmin();
+  const me = await requireUser();
+  if (!isNominator(me)) return { error: "Nu aveți drept de nominalizare." }; // per-region check: RLS
   const gameId = str(fd, "game_id");
   const position = str(fd, "position") as OfficialPosition;
   const userId = str(fd, "user_id");

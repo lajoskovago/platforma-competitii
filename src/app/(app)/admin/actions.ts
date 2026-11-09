@@ -167,14 +167,18 @@ function readUserFields(fd: FormData, me: Awaited<ReturnType<typeof requireAdmin
   const regionIn = region(str(fd, "region"));
   // regional admins create people in their own region
   const reg = me.isMaster ? regionIn : (regionIn ?? me.region);
+  const canNominate = me.isMaster && fd.get("can_nominate") === "on";
   if (role === "regional_admin" && !reg) return { error: "Alegeți regiunea administratorului regional." };
   if ((isReferee || isTableOfficial) && !reg) return { error: "Alegeți regiunea arbitrului / oficialului." };
+  if (canNominate && !reg) return { error: "Alegeți regiunea în care poate face nominalizări." };
   return {
     fields: {
       role,
-      region: role === "regional_admin" || isReferee || isTableOfficial ? reg : null,
+      region: role === "regional_admin" || isReferee || isTableOfficial || canNominate ? reg : null,
       is_referee: isReferee,
       is_table_official: isTableOfficial,
+      // only the master admin changes the delegation (also enforced in the DB)
+      ...(me.isMaster ? { can_nominate: canNominate } : {}),
     },
   };
 }

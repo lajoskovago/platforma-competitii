@@ -465,14 +465,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"email": string,"full_name": string,"id": string,"is_referee": boolean,"is_table_official": boolean,"phone": string | null,"region": Database["public"]['Enums']["region"] | null,"role": Database["public"]['Enums']["user_role"]
+                    "can_nominate": boolean,"created_at": string,"email": string,"full_name": string,"id": string,"is_referee": boolean,"is_table_official": boolean,"phone": string | null,"region": Database["public"]['Enums']["region"] | null,"role": Database["public"]['Enums']["user_role"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"email": string,"full_name"?: string,"id": string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "can_nominate"?: boolean,"created_at"?: string,"email": string,"full_name"?: string,"id": string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Update: {
-                    "created_at"?: string,"email"?: string,"full_name"?: string,"id"?: string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "can_nominate"?: boolean,"created_at"?: string,"email"?: string,"full_name"?: string,"id"?: string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Relationships: [
                     
@@ -698,6 +698,12 @@ isOneToOne: false
 "can_manage_group_games":
 { Args: { "p_group_id": string }; Returns: boolean
                            },
+"can_nominate_any":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"can_nominate_region":
+{ Args: { "p_region": Database["public"]['Enums']["region"] }; Returns: boolean
+                           },
 "can_view_game":
 { Args: { "p_game_id": string }; Returns: boolean
                            },
@@ -731,11 +737,17 @@ isOneToOne: false
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"is_club_manager":
+{ Args: { "p_club_id": string }; Returns: boolean
+                           },
 "is_master_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "is_my_team":
 { Args: { "p_team_id": string }; Returns: boolean
+                           },
+"is_national_category":
+{ Args: { "p_category_id": string }; Returns: boolean
                            },
 "is_official":
 { Args: Record<PropertyKey, never>; Returns: boolean

@@ -6,7 +6,13 @@ export function UserRoleFields({
   defaults,
 }: {
   isMaster: boolean;
-  defaults?: { role?: string; region?: string | null; is_referee?: boolean; is_table_official?: boolean };
+  defaults?: {
+    role?: string;
+    region?: string | null;
+    is_referee?: boolean;
+    is_table_official?: boolean;
+    can_nominate?: boolean;
+  };
 }) {
   return (
     <>
@@ -41,6 +47,22 @@ export function UserRoleFields({
           />
           Oficial de masă
         </label>
+        {isMaster && (
+          <label className="flex min-h-11 items-start gap-3 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm">
+            <input
+              type="checkbox"
+              name="can_nominate"
+              defaultChecked={defaults?.can_nominate}
+              className="mt-0.5 h-5 w-5 shrink-0 accent-orange-600"
+            />
+            <span>
+              <strong>Poate face nominalizări</strong>
+              <span className="block text-xs text-slate-600">
+                Nominalizează arbitri și oficiali la meciurile din regiunea lui și vede indisponibilitățile regiunii.
+              </span>
+            </span>
+          </label>
+        )}
       </fieldset>
     </>
   );
