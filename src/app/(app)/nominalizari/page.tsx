@@ -16,10 +16,11 @@ import {
 import { sideName } from "@/lib/queries";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { respondNomination } from "../meci/actions";
+import { APP_HOME } from "@/lib/brand";
 
 export default async function MyNominationsPage() {
   const user = await requireUser();
-  if (!user.isOfficial) redirect("/");
+  if (!user.isOfficial) redirect(APP_HOME);
   const supabase = await createSupabaseServer();
   const { data } = await supabase
     .from("game_officials")

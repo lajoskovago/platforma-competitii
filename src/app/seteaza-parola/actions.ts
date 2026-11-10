@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { str, type ActionState } from "@/lib/action-state";
+import { APP_HOME } from "@/lib/brand";
 
 export async function setPassword(_: ActionState, fd: FormData): Promise<ActionState> {
   const user = await requireUser();
@@ -26,5 +27,5 @@ export async function setPassword(_: ActionState, fd: FormData): Promise<ActionS
     .eq("id", user.id);
   if (pErr) return { error: pErr.message };
 
-  redirect("/");
+  redirect(APP_HOME);
 }

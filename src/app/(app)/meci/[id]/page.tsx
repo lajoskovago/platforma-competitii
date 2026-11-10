@@ -24,6 +24,7 @@ import { getGame, sideName } from "@/lib/queries";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { saveResult } from "../../grupa/actions";
 import { respondNomination, setNomination, setScoresheet } from "../actions";
+import { APP_HOME } from "@/lib/brand";
 
 export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
   const { id } = await params;
@@ -48,7 +49,7 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
   return (
     <>
       <PageTitle
-        back={standalone ? comp.path : g.group_id ? `/grupa/${g.group_id}` : "/"}
+        back={standalone ? comp.path : g.group_id ? `/grupa/${g.group_id}` : APP_HOME}
         sub={
           <>
             {comp.long} · {g.category?.name}

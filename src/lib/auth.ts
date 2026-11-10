@@ -3,6 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { Database } from "@/lib/database.types";
+import { APP_HOME } from "@/lib/brand";
 
 export type Region = Database["public"]["Enums"]["region"];
 export type Role = Database["public"]["Enums"]["user_role"];
@@ -81,13 +82,13 @@ export async function requireUser() {
 /** Master or regional admin */
 export async function requireAdmin() {
   const user = await requireUser();
-  if (!user.isAdmin) redirect("/");
+  if (!user.isAdmin) redirect(APP_HOME);
   return user;
 }
 
 export async function requireMaster() {
   const user = await requireUser();
-  if (!user.isMaster) redirect("/");
+  if (!user.isMaster) redirect(APP_HOME);
   return user;
 }
 

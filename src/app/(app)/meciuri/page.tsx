@@ -4,11 +4,12 @@ import { Chips, GameList } from "@/components/game-list";
 import { PageTitle, buttonClass, inputClass } from "@/components/ui";
 import { isNominator, requireUser } from "@/lib/auth";
 import { getGymCities, listGames } from "@/lib/queries";
+import { APP_HOME } from "@/lib/brand";
 
 /** All visible games with filters (city, period, type) and PDF export. */
 export default async function GamesPage({ searchParams }: PageProps<"/meciuri">) {
   const user = await requireUser();
-  if (!user.isOfficial && !isNominator(user)) redirect("/");
+  if (!user.isOfficial && !isNominator(user)) redirect(APP_HOME);
   const sp = (await searchParams) as Record<string, string | undefined>;
   const tip = sp.tip ?? "";
   const cand = sp.cand ?? "upcoming";

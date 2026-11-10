@@ -82,6 +82,18 @@ isOneToOne: false
       referencedRelation: "clubs"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "club_managers_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "public_clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "club_managers_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["club_id"]
+    },{
       foreignKeyName: "club_managers_user_id_fkey"
       columns: ["user_id"]
 isOneToOne: false
@@ -154,6 +166,12 @@ isOneToOne: false
       referencedRelation: "games"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "game_officials_game_id_fkey"
+      columns: ["game_id"]
+isOneToOne: false
+      referencedRelation: "public_games"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "game_officials_nominated_by_fkey"
       columns: ["nominated_by"]
 isOneToOne: false
@@ -192,6 +210,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "games_away_team_id_fkey"
+      columns: ["away_team_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["team_id"]
+    },{
       foreignKeyName: "games_away_team_id_fkey"
       columns: ["away_team_id"]
 isOneToOne: false
@@ -234,11 +258,23 @@ isOneToOne: false
       referencedRelation: "groups"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "games_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "public_groups"
+      referencedColumns: ["group_id"]
+    },{
       foreignKeyName: "games_gym_id_fkey"
       columns: ["gym_id"]
 isOneToOne: false
       referencedRelation: "gyms"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "games_home_team_id_fkey"
+      columns: ["home_team_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["team_id"]
     },{
       foreignKeyName: "games_home_team_id_fkey"
       columns: ["home_team_id"]
@@ -283,6 +319,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "groups"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_teams_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "public_groups"
+      referencedColumns: ["group_id"]
+    },{
+      foreignKeyName: "group_teams_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["team_id"]
     },{
       foreignKeyName: "group_teams_team_id_fkey"
       columns: ["team_id"]
@@ -374,6 +422,12 @@ isOneToOne: false
       referencedRelation: "groups"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "hosting_proposals_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "public_groups"
+      referencedColumns: ["group_id"]
+    },{
       foreignKeyName: "hosting_proposals_gym_id_fkey"
       columns: ["gym_id"]
 isOneToOne: false
@@ -391,6 +445,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hosting_proposals_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["team_id"]
     },{
       foreignKeyName: "hosting_proposals_team_id_fkey"
       columns: ["team_id"]
@@ -511,6 +571,12 @@ isOneToOne: false
       foreignKeyName: "proposal_responses_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["team_id"]
+    },{
+      foreignKeyName: "proposal_responses_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
       referencedRelation: "teams"
       referencedColumns: ["id"]
     }
@@ -528,6 +594,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "team_coaches_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["team_id"]
+    },{
       foreignKeyName: "team_coaches_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
@@ -577,6 +649,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "clubs"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "public_clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["club_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["club_id"]
     }
                   ]
                 },"tournaments": {
@@ -641,6 +725,18 @@ isOneToOne: false
       referencedRelation: "groups"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "group_teams_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "public_groups"
+      referencedColumns: ["group_id"]
+    },{
+      foreignKeyName: "group_teams_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["team_id"]
+    },{
       foreignKeyName: "group_teams_team_id_fkey"
       columns: ["team_id"]
 isOneToOne: false
@@ -660,6 +756,116 @@ isOneToOne: false
                            "city"?: string | null,"full_name"?: string | null,"id"?: string | null,"is_referee"?: boolean | null,"is_table_official"?: boolean | null,"region"?: Database["public"]['Enums']["region"] | null,"table_skills"?: (string)[] | null
                          }
                         Relationships: [
+                    
+                  ]
+                },"public_clubs": {
+                  Row: {
+                    "city": string | null,"id": string,"name": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "city"?: string | null,"id"?: string | null,"name"?: string | null
+                         }
+                        Update: {
+                           "city"?: string | null,"id"?: string | null,"name"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"public_games": {
+                  Row: {
+                    "away_club_id": string | null,"away_name": string | null,"category_code": string,"category_name": string,"category_scope": Database["public"]['Enums']["category_scope"],"category_sort": number,"competition": Database["public"]['Enums']["game_competition"],"group_id": string | null,"group_name": string | null,"gym_address": string | null,"gym_city": string | null,"gym_maps_url": string | null,"gym_name": string | null,"home_club_id": string | null,"home_name": string | null,"id": string,"is_done": boolean | null,"label": string | null,"starts_at": string,"tournament_name": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "games_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "group_overview"
+      referencedColumns: ["group_id"]
+    },{
+      foreignKeyName: "games_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "games_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "public_groups"
+      referencedColumns: ["group_id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["away_club_id"]
+isOneToOne: false
+      referencedRelation: "clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["home_club_id"]
+isOneToOne: false
+      referencedRelation: "clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["away_club_id"]
+isOneToOne: false
+      referencedRelation: "public_clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["home_club_id"]
+isOneToOne: false
+      referencedRelation: "public_clubs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["away_club_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["club_id"]
+    },{
+      foreignKeyName: "teams_club_id_fkey"
+      columns: ["home_club_id"]
+isOneToOne: false
+      referencedRelation: "public_group_teams"
+      referencedColumns: ["club_id"]
+    }
+                  ]
+                },"public_group_teams": {
+                  Row: {
+                    "club_city": string | null,"club_id": string,"club_name": string,"group_id": string,"team_id": string,"team_name": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "group_teams_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "group_overview"
+      referencedColumns: ["group_id"]
+    },{
+      foreignKeyName: "group_teams_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_teams_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "public_groups"
+      referencedColumns: ["group_id"]
+    }
+                  ]
+                },"public_groups": {
+                  Row: {
+                    "category_code": string,"category_name": string,"category_sort": number,"end_date": string | null,"group_id": string,"group_name": string,"gym_address": string | null,"gym_city": string | null,"gym_maps_url": string | null,"gym_name": string | null,"host_name": string | null,"notes": string | null,"region": Database["public"]['Enums']["region"] | null,"sort_order": number,"start_date": string | null,"tournament_name": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
                     
                   ]
                 }

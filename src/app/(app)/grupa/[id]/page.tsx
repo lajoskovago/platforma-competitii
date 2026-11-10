@@ -8,6 +8,7 @@ import { GROUP_STATUS, PROPOSAL_STATUS, formatDateRange, formatDateTime, formatU
 import { getAutoConfirmUntil, getGroupDetail, type GroupDetail } from "@/lib/queries";
 import { GroupAdminPanel } from "./group-admin-panel";
 import { adminConfirmProposal, adminUnconfirmGroup, respondToProposal, withdrawProposal } from "../actions";
+import { APP_HOME } from "@/lib/brand";
 
 export default async function GroupPage({ params }: PageProps<"/grupa/[id]">) {
   const { id } = await params;
@@ -32,7 +33,7 @@ export default async function GroupPage({ params }: PageProps<"/grupa/[id]">) {
   return (
     <>
       <PageTitle
-        back="/"
+        back={APP_HOME}
         sub={
           <>
             {overview.category_name} · {overview.tournament_name}

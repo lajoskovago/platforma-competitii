@@ -5,10 +5,11 @@ import { requireUser } from "@/lib/auth";
 import { formatDateRange } from "@/lib/format";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { addUnavailability, deleteUnavailability } from "../meci/actions";
+import { APP_HOME } from "@/lib/brand";
 
 export default async function UnavailabilityPage() {
   const user = await requireUser();
-  if (!user.isOfficial) redirect("/");
+  if (!user.isOfficial) redirect(APP_HOME);
   const supabase = await createSupabaseServer();
   const today = new Date().toISOString().slice(0, 10);
   const { data } = await supabase

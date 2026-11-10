@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { str, type ActionState } from "@/lib/action-state";
 import { IMP_ADMIN_TOKEN, IMP_LOG_ID, impCookieOptions } from "@/lib/impersonation";
 import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
+import { APP_HOME } from "@/lib/brand";
 
 /** Master admin: log in as another user for support. */
 export async function startImpersonation(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -49,7 +50,7 @@ export async function startImpersonation(_: ActionState, fd: FormData): Promise<
 
   jar.set(IMP_ADMIN_TOKEN, own.session.refresh_token, impCookieOptions);
   if (log) jar.set(IMP_LOG_ID, log.id, impCookieOptions);
-  redirect("/");
+  redirect(APP_HOME);
 }
 
 /** Leave the impersonated account and restore the admin's own session. */

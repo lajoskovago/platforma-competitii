@@ -6,10 +6,11 @@ import { requireUser } from "@/lib/auth";
 import { getNames } from "@/lib/queries";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createNationalTeam, deleteNationalTeam, inviteCoach, removeCoach } from "./actions";
+import { APP_HOME } from "@/lib/brand";
 
 export default async function ClubPage() {
   const user = await requireUser();
-  if (user.managedClubIds.length === 0) redirect("/");
+  if (user.managedClubIds.length === 0) redirect(APP_HOME);
   const supabase = await createSupabaseServer();
 
   const [{ data: clubs }, { data: teams }, { data: nationalCats }] = await Promise.all([

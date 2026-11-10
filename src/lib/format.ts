@@ -85,6 +85,10 @@ export function formatUntilDay(ts: string) {
   );
 }
 
+export function daysAgoISO(days: number) {
+  return new Date(Date.now() - days * 24 * 3600_000).toISOString();
+}
+
 export function sevenDaysAgo() {
   return Date.now() - 7 * 24 * 3600_000;
 }
@@ -114,7 +118,7 @@ export type Tone = "gray" | "amber" | "red" | "blue" | "green";
 
 export type Competition = "regional" | "national" | "friendly";
 export const COMPETITION_LABEL: Record<Competition, { short: string; long: string; tone: Tone; path: string }> = {
-  regional: { short: "Regional", long: "Campionat regional", tone: "gray", path: "/" },
+  regional: { short: "Regional", long: "Campionat regional", tone: "gray", path: "/echipe" },
   national: { short: "Național", long: "Campionatul Național", tone: "blue", path: "/national" },
   friendly: { short: "Amical", long: "Meci amical", tone: "green", path: "/amicale" },
 };

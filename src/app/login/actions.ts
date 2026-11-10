@@ -5,6 +5,7 @@ import { isImpersonating } from "@/lib/impersonation";
 import { stopImpersonation } from "@/app/(app)/impersonare/actions";
 import { createSupabaseMailer, createSupabaseServer } from "@/lib/supabase/server";
 import { str, type ActionState } from "@/lib/action-state";
+import { APP_HOME } from "@/lib/brand";
 
 export async function signIn(_: ActionState, fd: FormData): Promise<ActionState> {
   const email = str(fd, "email");
@@ -14,7 +15,7 @@ export async function signIn(_: ActionState, fd: FormData): Promise<ActionState>
   const supabase = await createSupabaseServer();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: "Email sau parolă incorecte." };
-  redirect("/");
+  redirect(APP_HOME);
 }
 
 export async function requestPasswordReset(_: ActionState, fd: FormData): Promise<ActionState> {

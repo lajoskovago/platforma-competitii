@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AppNav, CurrentSection, type NavItem } from "@/components/app-nav";
 import { isNominator, requireUser, type CurrentUser } from "@/lib/auth";
-import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
+import { APP_HOME, APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { isImpersonating } from "@/lib/impersonation";
 import { signOut } from "../login/actions";
 import { stopImpersonation } from "./impersonare/actions";
@@ -18,7 +18,7 @@ function navItems(user: CurrentUser): NavItem[] {
   add(user.isOfficial, { href: "/nominalizari", label: "Nominalizările mele", short: "Nominalizări", icon: "clipboard" });
   // coaches / club admins
   add(hasTeams || (!user.isOfficial && !user.isAdmin), {
-    href: "/",
+    href: "/echipe",
     label: "Echipele mele",
     short: "Echipe",
     icon: "users",
@@ -64,7 +64,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       )}
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-2">
-          <Link href="/" className="flex min-w-0 items-center gap-2 py-1 font-bold">
+          <Link href={APP_HOME} className="flex min-w-0 items-center gap-2 py-1 font-bold">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-600 text-base">🏀</span>
             <span className="hidden leading-tight sm:block">
               {APP_NAME}

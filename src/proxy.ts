@@ -3,7 +3,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import { publicUrl } from "@/lib/origin";
 import { supabaseUrl } from "@/lib/supabase/url";
 
-const PUBLIC_PATHS = ["/login", "/auth/confirm", "/am-uitat-parola", "/inregistrare-oficiali", "/inregistrare-antrenori"];
+// "/" is matched exactly (public schedule); the others also match their sub-paths
+const PUBLIC_PATHS = [
+  "/",
+  "/campionat",
+  "/login",
+  "/auth/confirm",
+  "/am-uitat-parola",
+  "/inregistrare-oficiali",
+  "/inregistrare-antrenori",
+];
 
 /**
  * Refreshes the Supabase session cookie on every request and sends
@@ -30,7 +39,7 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + "/"));
+  const isPublic = PUBLIC_PATHS.some((p) => path === p || (p !== "/" && path.startsWith(p + "/")));
 
   if (!data?.claims && !isPublic) {
     return NextResponse.redirect(publicUrl(request, "/login"));

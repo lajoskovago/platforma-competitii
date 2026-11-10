@@ -5,6 +5,7 @@ import { Badge, Card, Empty, PageTitle, buttonClass, inputClass } from "@/compon
 import { isNominator, requireUser } from "@/lib/auth";
 import { formatDateRange } from "@/lib/format";
 import { getUnavailabilityList } from "@/lib/unavailability";
+import { APP_HOME } from "@/lib/brand";
 
 /**
  * All unavailability of referees / table officials.
@@ -12,7 +13,7 @@ import { getUnavailabilityList } from "@/lib/unavailability";
  */
 export default async function AllUnavailabilityPage({ searchParams }: PageProps<"/indisponibilitati">) {
   const user = await requireUser();
-  if (!isNominator(user)) redirect("/");
+  if (!isNominator(user)) redirect(APP_HOME);
   const sp = (await searchParams) as Record<string, string | undefined>;
   const cand = sp.cand ?? "upcoming";
   const regiune = user.isMaster ? (sp.regiune ?? "") : "";

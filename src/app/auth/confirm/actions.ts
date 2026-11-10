@@ -4,6 +4,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { str, type ActionState } from "@/lib/action-state";
+import { APP_HOME } from "@/lib/brand";
 
 const TYPES: EmailOtpType[] = ["invite", "recovery", "email", "magiclink", "signup", "email_change"];
 
@@ -15,8 +16,8 @@ const TYPES: EmailOtpType[] = ["invite", "recovery", "email", "magiclink", "sign
 export async function confirmEmailLink(_: ActionState, fd: FormData): Promise<ActionState> {
   const tokenHash = str(fd, "token_hash");
   const type = str(fd, "type") as EmailOtpType;
-  const nextParam = str(fd, "next") || "/";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/";
+  const nextParam = str(fd, "next") || APP_HOME;
+  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : APP_HOME;
   if (!tokenHash || !TYPES.includes(type)) return { error: "Link invalid." };
 
   const supabase = await createSupabaseServer();

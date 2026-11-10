@@ -4,10 +4,10 @@ import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Card, Field, inputClass } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { signIn } from "./actions";
-import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
+import { APP_HOME, APP_NAME, APP_TAGLINE } from "@/lib/brand";
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
-  if (await getCurrentUser()) redirect("/");
+  if (await getCurrentUser()) redirect(APP_HOME);
   const { eroare } = await searchParams;
 
   return (

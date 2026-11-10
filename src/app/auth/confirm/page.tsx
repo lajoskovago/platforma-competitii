@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Card, PageTitle } from "@/components/ui";
 import { confirmEmailLink } from "./actions";
-import { APP_NAME } from "@/lib/brand";
+import { APP_HOME, APP_NAME } from "@/lib/brand";
 
 export const metadata = { title: `Confirmare – ${APP_NAME}` };
 
@@ -11,7 +11,7 @@ export default async function ConfirmPage({ searchParams }: PageProps<"/auth/con
   const sp = (await searchParams) as Record<string, string | undefined>;
   const tokenHash = sp.token_hash ?? "";
   const type = sp.type ?? "";
-  const next = sp.next ?? "/";
+  const next = sp.next ?? APP_HOME;
   const isInvite = type === "invite";
 
   return (
