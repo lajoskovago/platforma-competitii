@@ -680,6 +680,9 @@ isOneToOne: false
 "admin_unconfirm_group":
 { Args: { "p_group_id": string }; Returns: undefined
                            },
+"admin_update_tournament":
+{ Args: { "p_end_date"?: string,"p_group_id": string,"p_gym_id": string,"p_move_games"?: boolean,"p_notes"?: string,"p_start_date": string }; Returns: undefined
+                           },
 "app_conditions_text":
 { Args: Record<PropertyKey, never>; Returns: string
                            },

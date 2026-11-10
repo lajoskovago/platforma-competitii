@@ -69,6 +69,9 @@ export default async function GroupPage({ params }: PageProps<"/grupa/[id]">) {
           </div>
           {canAdmin && (
             <div className="mt-3 flex flex-wrap gap-2 border-t border-emerald-200 pt-3">
+              <LinkButton href={`/grupa/${id}/modifica-turneu`} variant="secondary">
+                Modifică data / sala (admin)
+              </LinkButton>
               <LinkButton href={`/grupa/${id}/desemneaza`} variant="secondary">
                 Schimbă organizatorul (admin)
               </LinkButton>

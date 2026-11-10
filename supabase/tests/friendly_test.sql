@@ -35,11 +35,12 @@ set local role authenticated;
 
 -- coach of Valbon adds an SR5 friendly against an outside team
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000c1');
-insert into games (competition, category_id, region, home_team_id, away_external, starts_at)
-  values ('friendly', (select v from ids where k='cat'), 'SR5', (select v from ids where k='t_valbon'), 'CSM Test', '2026-11-20 18:00+02');
-reset role;
-insert into ids select 'fg', id from games where competition='friendly' and away_external='CSM Test';
-set local role authenticated;
+with created as (
+  insert into games (competition, category_id, region, home_team_id, away_external, starts_at)
+  values ('friendly', (select v from ids where k='cat'), 'SR5', (select v from ids where k='t_valbon'), 'CSM Test', '2026-11-20 18:00+02')
+  returning id
+)
+insert into ids select 'fg', id from created;
 
 -- a coach cannot add a friendly without his own team
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');

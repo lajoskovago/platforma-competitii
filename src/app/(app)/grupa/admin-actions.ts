@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { canAdminRegion, requireUser } from "@/lib/auth";
 import { dbError, str, type ActionState } from "@/lib/action-state";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { notifyGroup } from "@/lib/notify";
 
 /** The caller must administer the group's region (master: all). */
 async function groupAdmin(groupId: string) {
@@ -117,4 +118,49 @@ export async function deleteGroup(_: ActionState, fd: FormData): Promise<ActionS
   const { error } = await ctx.supabase.from("groups").delete().eq("id", groupId);
   if (error) return dbError(error);
   redirect("/admin");
+}
+
+/** Admin: change date / gym of a tournament with a confirmed organiser (organiser stays confirmed). */
+export async function adminUpdateTournament(_: ActionState, fd: FormData): Promise<ActionState> {
+  const groupId = str(fd, "group_id");
+  const ctx = await groupAdmin(groupId);
+  if (!ctx) return { error: "Nu administrați această grupă." };
+
+  const start = str(fd, "start_date");
+  const end = str(fd, "end_date");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) return { error: "Alegeți data turneului." };
+  if (end && end < start) return { error: "Data de final este înaintea datei de început." };
+
+  // gym: existing or a new one
+  let gymId = str(fd, "gym_id");
+  if (!gymId || gymId === "new") {
+    const name = str(fd, "gym_name");
+    const city = str(fd, "gym_city");
+    if (!name || !city) return { error: "Alegeți o sală din listă sau completați numele și orașul sălii noi." };
+    const { data: gym, error } = await ctx.supabase
+      .from("gyms")
+      .insert({
+        name,
+        city,
+        address: str(fd, "gym_address") || null,
+        maps_url: str(fd, "gym_maps_url") || null,
+        created_by: ctx.user.id,
+      })
+      .select("id")
+      .single();
+    if (error) return dbError(error);
+    gymId = gym.id;
+  }
+
+  const { error } = await ctx.supabase.rpc("admin_update_tournament", {
+    p_group_id: groupId,
+    p_gym_id: gymId,
+    p_start_date: start,
+    p_end_date: end || undefined,
+    p_notes: str(fd, "notes") || undefined,
+    p_move_games: fd.get("move_games") === "on",
+  });
+  if (error) return dbError(error);
+  await notifyGroup(groupId, "Turneu modificat", "Administratorul a modificat data sau sala turneului.", ctx.user.id);
+  redirect(`/grupa/${groupId}`);
 }

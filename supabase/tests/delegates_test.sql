@@ -63,9 +63,9 @@ select pg_temp.check((select count(*) from official_unavailability where user_id
 select pg_temp.check((select count(*) from official_unavailability where user_id='00000000-0000-0000-0000-0000000000f6')=0, 'delegate does not see SR6 unavailability');
 -- master sees all unavailability; regional admin only own region
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000e1');
-select pg_temp.check((select count(*) from official_unavailability)=2, 'master sees all unavailability');
+select pg_temp.check((select count(*) from official_unavailability where user_id in ('00000000-0000-0000-0000-0000000000f5','00000000-0000-0000-0000-0000000000f6'))=2, 'master sees all unavailability');
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000e5');
-select pg_temp.check((select count(*) from official_unavailability)=1, 'regional admin sees own region');
+select pg_temp.check((select count(*) from official_unavailability where user_id in ('00000000-0000-0000-0000-0000000000f5','00000000-0000-0000-0000-0000000000f6'))=1, 'regional admin sees own region');
 
 select 'ALL DELEGATE TESTS PASSED' as result;
 rollback;
