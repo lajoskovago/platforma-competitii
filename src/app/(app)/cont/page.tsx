@@ -1,6 +1,7 @@
 import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Card, Field, LinkButton, PageTitle, inputClass } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
+import { OfficialFields } from "@/components/official-fields";
 import { updateMyProfile } from "./actions";
 
 export default async function AccountPage() {
@@ -16,6 +17,9 @@ export default async function AccountPage() {
           <Field label="Telefon" hint="Vizibil pentru ceilalți antrenori din grupele dvs.">
             <input name="phone" type="tel" defaultValue={user.phone ?? ""} className={inputClass} />
           </Field>
+          {user.isOfficial && (
+            <OfficialFields city={user.city} skills={user.tableSkills} cityRequired showSkills={user.isTableOfficial} />
+          )}
           <SubmitButton>Salvează</SubmitButton>
         </ActionForm>
       </Card>

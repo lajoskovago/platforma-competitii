@@ -144,6 +144,37 @@ export const POSITION_LABEL: Record<OfficialPosition, string> = {
   statistician_3: "Statistician 3",
 };
 
+/** What a table official can do (self-declared, editable by admins). */
+export const TABLE_SKILLS = ["dss", "scorer", "timekeeper", "shot_clock", "statistics"] as const;
+export type TableSkill = (typeof TABLE_SKILLS)[number];
+export const TABLE_SKILL_LABEL: Record<TableSkill, string> = {
+  dss: "DSS",
+  scorer: "Scorer",
+  timekeeper: "Cronometror",
+  shot_clock: 'Operator 24"',
+  statistics: "Statistică",
+};
+/** Skill needed for a table position (referee positions: none). */
+export const POSITION_SKILL: Partial<Record<OfficialPosition, TableSkill>> = {
+  scorer: "scorer",
+  assistant_scorer: "scorer",
+  timekeeper: "timekeeper",
+  shot_clock: "shot_clock",
+  statistician_1: "statistics",
+  statistician_2: "statistics",
+  statistician_3: "statistics",
+};
+/** Skill the position needs on this game (Scorer on a DSS game needs the DSS skill). */
+export function skillForPosition(position: OfficialPosition, scoresheet: string | null | undefined): TableSkill | undefined {
+  if (position === "scorer" && scoresheet === "dss") return "dss";
+  return POSITION_SKILL[position];
+}
+export const SCORESHEET_LABEL: Record<string, string> = { manual: "Manuală (pe hârtie)", dss: "Digitală (DSS)" };
+
+export function readSkills(fd: FormData): TableSkill[] {
+  return TABLE_SKILLS.filter((k) => fd.get(`skill_${k}`) === "on");
+}
+
 export const NOMINATION_STATUS: Record<string, { label: string; tone: Tone; icon: string }> = {
   pending: { label: "Așteaptă confirmare", tone: "amber", icon: "⏳" },
   accepted: { label: "Confirmat", tone: "green", icon: "✅" },

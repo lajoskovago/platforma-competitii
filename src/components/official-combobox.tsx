@@ -3,7 +3,14 @@
 import { useId, useMemo, useRef, useState } from "react";
 import { inputClass } from "@/components/ui";
 
-export type OfficialOption = { id: string; name: string; warnings: string[] };
+export type OfficialOption = {
+  id: string;
+  name: string;
+  city?: string;
+  warnings: string[];
+  /** has the skill this position needs */
+  skilled?: boolean;
+};
 
 const norm = (s: string) =>
   s
@@ -37,9 +44,19 @@ export function OfficialCombobox({
 
   const matches = useMemo(() => {
     const q = norm(query);
-    const list = selected && query === selected.name ? options : options.filter((o) => norm(o.name).includes(q));
-    // available people first
-    return [...list].sort((a, b) => a.warnings.length - b.warnings.length || a.name.localeCompare(b.name, "ro")).slice(0, 8);
+    const list =
+      selected && query === selected.name
+        ? options
+        : options.filter((o) => norm(o.name).includes(q) || norm(o.city ?? "").includes(q));
+    // available people first, then those with the right skill, then by name
+    return [...list]
+      .sort(
+        (a, b) =>
+          a.warnings.length - b.warnings.length ||
+          Number(!!b.skilled) - Number(!!a.skilled) ||
+          a.name.localeCompare(b.name, "ro"),
+      )
+      .slice(0, 10);
   }, [query, options, selected]);
 
   function choose(o: OfficialOption | null) {
@@ -61,7 +78,7 @@ export function OfficialCombobox({
           aria-controls={listId}
           aria-autocomplete="list"
           autoComplete="off"
-          placeholder="Scrieți un nume…"
+          placeholder="Scrieți un nume sau un oraș…"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -125,6 +142,8 @@ export function OfficialCombobox({
               className={`cursor-pointer px-3 py-2 text-sm ${i === active ? "bg-orange-50" : ""}`}
             >
               <span className={o.warnings.length ? "text-slate-500" : "font-medium"}>{o.name}</span>
+              {o.city && <span className="ml-1 text-xs text-slate-500">· {o.city}</span>}
+              {o.skilled && <span className="ml-1 text-xs text-emerald-700">✓</span>}
               {o.warnings.length > 0 && <span className="block text-xs text-amber-700">⚠️ {o.warnings.join("; ")}</span>}
             </li>
           ))}

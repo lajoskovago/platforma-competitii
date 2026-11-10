@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { Chips } from "@/components/game-list";
-import { Badge, Card, Empty, PageTitle, inputClass } from "@/components/ui";
+import { Badge, Card, Empty, PageTitle, buttonClass, inputClass } from "@/components/ui";
 import { isNominator, requireUser } from "@/lib/auth";
-import { formatDateRange, isoToBucharest } from "@/lib/format";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { formatDateRange } from "@/lib/format";
+import { getUnavailabilityList } from "@/lib/unavailability";
 
 /**
  * All unavailability of referees / table officials.
@@ -12,38 +12,10 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 export default async function AllUnavailabilityPage({ searchParams }: PageProps<"/indisponibilitati">) {
   const user = await requireUser();
   if (!isNominator(user)) redirect("/");
-  const { cand = "upcoming", regiune = "", q = "" } = (await searchParams) as Record<string, string | undefined>;
+  const { cand = "upcoming", regiune = "", q = "", oras = "" } = (await searchParams) as Record<string, string | undefined>;
 
-  const today = isoToBucharest(new Date().toISOString()).date;
-  const supabase = await createSupabaseServer();
-  let query = supabase.from("official_unavailability").select("*").order("start_date").order("start_time");
-  if (cand === "upcoming") query = query.gte("end_date", today);
-  else query = query.lt("end_date", today);
-  const { data: rows } = await query.limit(500);
-
-  const ids = [...new Set((rows ?? []).map((r) => r.user_id))];
-  const { data: people } = ids.length
-    ? await supabase.from("profile_names").select("id, full_name, region, is_referee, is_table_official").in("id", ids)
-    : { data: [] };
-  const person = (id: string) => (people ?? []).find((p) => p.id === id);
-
-  const needle = q
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
-  const list = (rows ?? []).filter((r) => {
-    const p = person(r.user_id);
-    if (regiune && p?.region !== regiune) return false;
-    if (needle) {
-      const n = (p?.full_name ?? "")
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "")
-        .toLowerCase();
-      if (!n.includes(needle)) return false;
-    }
-    return true;
-  });
-  if (cand !== "upcoming") list.reverse();
+  const { list, cities } = await getUnavailabilityList({ cand, regiune, q, oras });
+  const person = (id: string) => list.find((r) => r.user_id === id)?.person;
 
   // group by first day of the period
   const byDay = list.reduce<Record<string, typeof list>>((acc, r) => {
@@ -51,11 +23,16 @@ export default async function AllUnavailabilityPage({ searchParams }: PageProps<
     return acc;
   }, {});
 
+  const pdfQuery = new URLSearchParams(
+    Object.entries({ cand: cand === "upcoming" ? "" : cand, regiune, q, oras }).filter(([, v]) => v),
+  ).toString();
+
   const href = (c: string, r: string) => {
     const p = new URLSearchParams();
     if (c !== "upcoming") p.set("cand", c);
     if (r) p.set("regiune", r);
     if (q) p.set("q", q);
+    if (oras) p.set("oras", oras);
     const s = p.toString();
     return s ? `/indisponibilitati?${s}` : "/indisponibilitati";
   };
@@ -85,17 +62,31 @@ export default async function AllUnavailabilityPage({ searchParams }: PageProps<
           href={(k) => href(cand, k)}
         />
       )}
-      <form className="mb-4">
+      <form className="mb-4 grid grid-cols-[1fr_auto] gap-2">
         {cand !== "upcoming" && <input type="hidden" name="cand" value={cand} />}
         {regiune && <input type="hidden" name="regiune" value={regiune} />}
         <input name="q" defaultValue={q} placeholder="Caută după nume…" className={inputClass} />
+        <select name="oras" defaultValue={oras} aria-label="Oraș" className={inputClass}>
+          <option value="">Toate orașele</option>
+          {cities.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <button className={`${buttonClass("secondary")} col-span-2`}>Filtrează</button>
       </form>
 
       {list.length === 0 ? (
         <Empty>Nicio indisponibilitate pentru filtrul ales.</Empty>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-slate-500">{list.length} perioade</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm text-slate-500">{list.length} perioade</p>
+            <a href={`/indisponibilitati/pdf?${pdfQuery}`} download className={buttonClass("secondary")}>
+              📄 Descarcă PDF
+            </a>
+          </div>
           {Object.entries(byDay).map(([day, items]) => (
             <section key={day}>
               <Card className="divide-y divide-slate-100 p-0!">
@@ -109,6 +100,7 @@ export default async function AllUnavailabilityPage({ searchParams }: PageProps<
                           {p?.is_referee && <Badge tone="green">arbitru</Badge>}
                           {p?.is_table_official && <Badge tone="blue">oficial</Badge>}
                           {p?.region && <Badge>{p.region}</Badge>}
+                          {p?.city && <Badge>📍 {p.city}</Badge>}
                         </span>
                       </div>
                       <div className="mt-1 text-sm capitalize text-slate-700">

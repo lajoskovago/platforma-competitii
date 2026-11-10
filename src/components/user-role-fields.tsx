@@ -1,3 +1,4 @@
+import { OfficialFields } from "@/components/official-fields";
 import { Field, inputClass } from "@/components/ui";
 
 /** Role / region / official fields for user forms (what is offered depends on who edits). */
@@ -12,6 +13,8 @@ export function UserRoleFields({
     is_referee?: boolean;
     is_table_official?: boolean;
     can_nominate?: boolean;
+    city?: string | null;
+    table_skills?: string[];
   };
 }) {
   return (
@@ -64,6 +67,12 @@ export function UserRoleFields({
           </label>
         )}
       </fieldset>
+      <details className="rounded-lg border border-slate-200 px-3" open={!!(defaults?.city || defaults?.table_skills?.length)}>
+        <summary className="cursor-pointer py-2 text-sm font-medium text-slate-700">Oraș și calificări (arbitri / oficiali)</summary>
+        <div className="space-y-3 pb-3">
+          <OfficialFields city={defaults?.city} skills={defaults?.table_skills ?? []} />
+        </div>
+      </details>
     </>
   );
 }

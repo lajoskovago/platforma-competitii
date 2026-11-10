@@ -2,7 +2,7 @@ import "server-only";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { Database } from "@/lib/database.types";
 import type { Region } from "@/lib/auth";
-import { upcomingCutoff } from "@/lib/format";
+import { bucharestToISO, upcomingCutoff } from "@/lib/format";
 
 type Tables = Database["public"]["Tables"];
 export type Gym = Tables["gyms"]["Row"];
@@ -232,19 +232,35 @@ export async function listGames(opts: {
   competition?: "regional" | "national" | "friendly";
   categoryCode?: string;
   when?: "upcoming" | "past";
+  /** gym city (case-insensitive) */
+  city?: string;
+  /** Bucharest calendar dates "YYYY-MM-DD"; when given, they replace `when` */
+  from?: string;
+  to?: string;
   limit?: number;
 }) {
   const supabase = await createSupabaseServer();
   let q = supabase
     .from("games")
     .select(
-      "*, gym:gyms(name, city), category:categories!inner(code, name, scope), home:teams!games_home_team_id_fkey(name), away:teams!games_away_team_id_fkey(name)",
+      "*, gym:gyms(name, city, address), category:categories!inner(code, name, scope), home:teams!games_home_team_id_fkey(name), away:teams!games_away_team_id_fkey(name)",
     );
   if (opts.competition) q = q.eq("competition", opts.competition);
   if (opts.categoryCode) q = q.eq("category.code", opts.categoryCode);
-  const now = new Date(upcomingCutoff()).toISOString();
-  q = opts.when === "past" ? q.lt("starts_at", now).order("starts_at", { ascending: false }) : q.gte("starts_at", now).order("starts_at");
-  const { data } = await q.limit(opts.limit ?? 200);
+  if (opts.city) {
+    const { data: gyms } = await supabase.from("gyms").select("id").ilike("city", opts.city.trim());
+    q = q.in("gym_id", (gyms ?? []).map((g) => g.id).concat(["00000000-0000-0000-0000-000000000000"]));
+  }
+  const DATE = /^\d{4}-\d{2}-\d{2}$/;
+  if ((opts.from && DATE.test(opts.from)) || (opts.to && DATE.test(opts.to))) {
+    if (opts.from && DATE.test(opts.from)) q = q.gte("starts_at", bucharestToISO(opts.from, "00:00"));
+    if (opts.to && DATE.test(opts.to)) q = q.lte("starts_at", bucharestToISO(opts.to, "23:59"));
+    q = q.order("starts_at");
+  } else {
+    const now = new Date(upcomingCutoff()).toISOString();
+    q = opts.when === "past" ? q.lt("starts_at", now).order("starts_at", { ascending: false }) : q.gte("starts_at", now).order("starts_at");
+  }
+  const { data } = await q.limit(opts.limit ?? 300);
   const games = data ?? [];
   const nominations = await getNominations(games.map((g) => g.id));
   return games.map((g) => ({ ...g, nominations: nominations.filter((n) => n.game_id === g.id) }));
@@ -258,4 +274,11 @@ export function sideName(
 ) {
   if (team) return team.name;
   return (side === "home" ? g.home_external ?? g.home_label : g.away_external ?? g.away_label) ?? "?";
+}
+
+/** Distinct gym cities, for the city filter. */
+export async function getGymCities() {
+  const supabase = await createSupabaseServer();
+  const { data } = await supabase.from("gyms").select("city");
+  return [...new Set((data ?? []).map((g) => g.city.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ro"));
 }

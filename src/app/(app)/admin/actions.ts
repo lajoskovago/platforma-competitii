@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createSupabaseAdmin, createSupabaseMailer, createSupabaseServer } from "@/lib/supabase/server";
 import { authEmailError, dbError, str, type ActionState } from "@/lib/action-state";
-import { bucharestToISO } from "@/lib/format";
+import { bucharestToISO, readSkills } from "@/lib/format";
 
 const region = (v: string) => (v === "SR5" || v === "SR6" ? v : null);
 
@@ -177,6 +177,8 @@ function readUserFields(fd: FormData, me: Awaited<ReturnType<typeof requireAdmin
       region: role === "regional_admin" || isReferee || isTableOfficial || canNominate ? reg : null,
       is_referee: isReferee,
       is_table_official: isTableOfficial,
+      city: str(fd, "city") || null,
+      table_skills: isTableOfficial ? readSkills(fd) : [],
       // only the master admin changes the delegation (also enforced in the DB)
       ...(me.isMaster ? { can_nominate: canNominate } : {}),
     },

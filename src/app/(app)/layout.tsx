@@ -33,7 +33,7 @@ function navItems(user: CurrentUser): NavItem[] {
     label: "Amicale",
     icon: "handshake",
   });
-  add(user.isAdmin || user.isOfficial, { href: "/meciuri", label: "Meciuri", icon: "calendar", also: ["/meci"] });
+  add(user.isAdmin || user.isOfficial || user.canNominate, { href: "/meciuri", label: "Meciuri", icon: "calendar", also: ["/meci"] });
   add(user.isOfficial, { href: "/indisponibilitate", label: "Indisponibilitatea mea", short: "Indisponibil", icon: "calendarOff" });
   add(isNominator(user), { href: "/indisponibilitati", label: "Indisponibilități", icon: "calendarX" });
   add(user.isAdmin, { href: "/admin/echipe", label: "Echipe", icon: "shirt" });

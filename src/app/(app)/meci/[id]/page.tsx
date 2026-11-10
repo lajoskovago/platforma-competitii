@@ -9,9 +9,12 @@ import {
   NOMINATION_STATUS,
   POSITION_LABEL,
   REFEREE_POSITIONS,
+  SCORESHEET_LABEL,
   TABLE_POSITIONS,
+  TABLE_SKILL_LABEL,
   COMPETITION_LABEL,
   bucharestToISO,
+  skillForPosition,
   formatDateTime,
   isoToBucharest,
   mapsLink,
@@ -20,7 +23,7 @@ import {
 import { getGame, sideName } from "@/lib/queries";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { saveResult } from "../../grupa/actions";
-import { respondNomination, setNomination } from "../actions";
+import { respondNomination, setNomination, setScoresheet } from "../actions";
 
 export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
   const { id } = await params;
@@ -247,15 +250,53 @@ async function NominationEditor({ g }: { g: G }) {
           Lista conține {g.gameRegion ? `persoanele din ${g.gameRegion}` : "persoanele din ambele regiuni"}. ⚠️ =
           indisponibil sau nominalizat la alt meci în aceeași zi.
         </p>
+        <ActionForm action={setScoresheet} className="space-y-1 rounded-lg bg-slate-50 p-3">
+          <input type="hidden" name="game_id" value={g.id} />
+          <label className="block text-sm font-medium text-slate-700" htmlFor="scoresheet">
+            Foaie de joc
+          </label>
+          <div className="flex gap-2">
+            <select id="scoresheet" name="scoresheet" defaultValue={g.scoresheet ?? ""} className={inputClass}>
+              <option value="">— nestabilit —</option>
+              <option value="manual">{SCORESHEET_LABEL.manual}</option>
+              <option value="dss">{SCORESHEET_LABEL.dss}</option>
+            </select>
+            <SubmitButton variant="secondary" full={false}>
+              Salvează
+            </SubmitButton>
+          </div>
+          <p className="text-xs text-slate-500">La foaia digitală, scorerul trebuie să știe DSS.</p>
+        </ActionForm>
         {all.map((pos) => {
           const isRef = (REFEREE_POSITIONS as readonly string[]).includes(pos);
           const current = g.nominations.find((n) => n.position === pos);
           const people = regionPeople.filter((p) => (isRef ? p.is_referee : p.is_table_official));
           // keep the current nominee selectable even if no longer in the list (e.g. region changed)
           if (current && !people.some((p) => p.id === current.user_id)) {
-            people.push({ id: current.user_id, full_name: current.name, region: null, is_referee: isRef, is_table_official: !isRef });
+            people.push({
+              id: current.user_id,
+              full_name: current.name,
+              region: null,
+              is_referee: isRef,
+              is_table_official: !isRef,
+              city: null,
+              table_skills: [],
+            });
           }
-          const options = people.map((p) => ({ id: p.id!, name: p.full_name ?? "", warnings: warn(p.id!) }));
+          const skill = skillForPosition(pos, g.scoresheet);
+          const options = people.map((p) => {
+            const w = warn(p.id!);
+            // only flag missing skills for officials who declared their skills
+            const skills = p.table_skills ?? [];
+            if (skill && skills.length > 0 && !skills.includes(skill)) w.push(`nu face: ${TABLE_SKILL_LABEL[skill]}`);
+            return {
+              id: p.id!,
+              name: p.full_name ?? "",
+              city: p.city ?? "",
+              warnings: w,
+              skilled: !!skill && skills.includes(skill),
+            };
+          });
           return (
             <ActionForm key={pos} action={setNomination} className="space-y-1">
               <input type="hidden" name="game_id" value={g.id} />

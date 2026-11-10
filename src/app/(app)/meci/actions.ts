@@ -263,3 +263,17 @@ export async function deleteUnavailability(_: ActionState, fd: FormData): Promis
   refresh();
   return {};
 }
+
+/** Nominators: manual or digital (DSS) scoresheet for the game. */
+export async function setScoresheet(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireUser();
+  const v = str(fd, "scoresheet");
+  const supabase = await createSupabaseServer();
+  const { error } = await supabase.rpc("set_game_scoresheet", {
+    p_game_id: str(fd, "game_id"),
+    p_scoresheet: v === "manual" || v === "dss" ? v : undefined,
+  });
+  if (error) return dbError(error);
+  refresh();
+  return { ok: "Tipul foii de joc a fost salvat." };
+}

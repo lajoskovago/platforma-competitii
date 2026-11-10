@@ -181,14 +181,14 @@ isOneToOne: false
                   ]
                 },"games": {
                   Row: {
-                    "away_external": string | null,"away_label": string | null,"away_score": number | null,"away_team_id": string | null,"category_id": string | null,"competition": Database["public"]['Enums']["game_competition"],"created_at": string,"created_by": string | null,"group_id": string | null,"gym_id": string | null,"home_external": string | null,"home_label": string | null,"home_score": number | null,"home_team_id": string | null,"id": string,"label": string | null,"region": Database["public"]['Enums']["region"] | null,"starts_at": string,"status": Database["public"]['Enums']["game_status"],"updated_at": string,"updated_by": string | null
+                    "away_external": string | null,"away_label": string | null,"away_score": number | null,"away_team_id": string | null,"category_id": string | null,"competition": Database["public"]['Enums']["game_competition"],"created_at": string,"created_by": string | null,"group_id": string | null,"gym_id": string | null,"home_external": string | null,"home_label": string | null,"home_score": number | null,"home_team_id": string | null,"id": string,"label": string | null,"region": Database["public"]['Enums']["region"] | null,"scoresheet": string | null,"starts_at": string,"status": Database["public"]['Enums']["game_status"],"updated_at": string,"updated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"starts_at": string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
+                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"scoresheet"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
+                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"scoresheet"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -465,14 +465,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "can_nominate": boolean,"created_at": string,"email": string,"full_name": string,"id": string,"is_referee": boolean,"is_table_official": boolean,"phone": string | null,"region": Database["public"]['Enums']["region"] | null,"role": Database["public"]['Enums']["user_role"]
+                    "can_nominate": boolean,"city": string | null,"created_at": string,"email": string,"full_name": string,"id": string,"is_referee": boolean,"is_table_official": boolean,"phone": string | null,"region": Database["public"]['Enums']["region"] | null,"role": Database["public"]['Enums']["user_role"],"table_skills": (string)[]
                   }
                   ComputedFields: never
                   Insert: {
-                    "can_nominate"?: boolean,"created_at"?: string,"email": string,"full_name"?: string,"id": string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "can_nominate"?: boolean,"city"?: string | null,"created_at"?: string,"email": string,"full_name"?: string,"id": string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"],"table_skills"?: (string)[]
                   }
                   Update: {
-                    "can_nominate"?: boolean,"created_at"?: string,"email"?: string,"full_name"?: string,"id"?: string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "can_nominate"?: boolean,"city"?: string | null,"created_at"?: string,"email"?: string,"full_name"?: string,"id"?: string,"is_referee"?: boolean,"is_table_official"?: boolean,"phone"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"role"?: Database["public"]['Enums']["user_role"],"table_skills"?: (string)[]
                   }
                   Relationships: [
                     
@@ -650,14 +650,14 @@ isOneToOne: false
                   ]
                 },"profile_names": {
                   Row: {
-                    "full_name": string,"id": string,"is_referee": boolean,"is_table_official": boolean,"region": Database["public"]['Enums']["region"] | null
+                    "city": string | null,"full_name": string,"id": string,"is_referee": boolean,"is_table_official": boolean,"region": Database["public"]['Enums']["region"] | null,"table_skills": (string)[]
                   }
                   ComputedFields: never
                   Insert: {
-                           "full_name"?: string | null,"id"?: string | null,"is_referee"?: boolean | null,"is_table_official"?: boolean | null,"region"?: Database["public"]['Enums']["region"] | null
+                           "city"?: string | null,"full_name"?: string | null,"id"?: string | null,"is_referee"?: boolean | null,"is_table_official"?: boolean | null,"region"?: Database["public"]['Enums']["region"] | null,"table_skills"?: (string)[] | null
                          }
                         Update: {
-                           "full_name"?: string | null,"id"?: string | null,"is_referee"?: boolean | null,"is_table_official"?: boolean | null,"region"?: Database["public"]['Enums']["region"] | null
+                           "city"?: string | null,"full_name"?: string | null,"id"?: string | null,"is_referee"?: boolean | null,"is_table_official"?: boolean | null,"region"?: Database["public"]['Enums']["region"] | null,"table_skills"?: (string)[] | null
                          }
                         Relationships: [
                     
@@ -769,6 +769,9 @@ isOneToOne: false
                            },
 "respond_to_proposal":
 { Args: { "p_proposal_id": string,"p_reason"?: string,"p_response": Database["public"]['Enums']["response_kind"],"p_team_id": string }; Returns: undefined
+                           },
+"set_game_scoresheet":
+{ Args: { "p_game_id": string,"p_scoresheet"?: string }; Returns: undefined
                            },
 "update_proposal":
 { Args: { "p_end_date"?: string,"p_gym_id": string,"p_notes"?: string,"p_proposal_id": string,"p_start_date": string }; Returns: undefined

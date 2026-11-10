@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Card, Field, PageTitle, inputClass } from "@/components/ui";
+import { OfficialFields } from "@/components/official-fields";
 import { signUpOfficial } from "./actions";
 import { APP_NAME } from "@/lib/brand";
 
@@ -41,6 +42,7 @@ export default function OfficialSignUpPage() {
               <input type="checkbox" name="is_table_official" className="h-5 w-5 accent-orange-600" /> Oficial de masă
             </label>
           </fieldset>
+          <OfficialFields cityRequired />
           {/* honeypot */}
           <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
           <SubmitButton>Înregistrează-mă</SubmitButton>
