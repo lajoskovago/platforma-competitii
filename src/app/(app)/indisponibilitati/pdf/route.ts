@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
     regiune: user.isMaster ? (sp.get("regiune") ?? "") : "",
     q: sp.get("q") ?? "",
     oras: sp.get("oras") ?? "",
+    de: sp.get("de") ?? "",
+    pana: sp.get("pana") ?? "",
   };
   const { list } = await getUnavailabilityList(filters);
 
@@ -24,7 +26,11 @@ export async function GET(request: NextRequest) {
     user.isMaster ? (filters.regiune ? `Regiunea ${filters.regiune}` : "Toate regiunile") : `Regiunea ${user.region}`,
     filters.oras && `Oraș: ${filters.oras}`,
     filters.q && `Nume: „${filters.q}”`,
-    filters.cand === "past" ? "Perioade trecute" : "Perioade actuale și viitoare",
+    filters.de || filters.pana
+      ? `Perioada: ${filters.de ? formatDate(filters.de) : "…"} – ${filters.pana ? formatDate(filters.pana) : "…"}`
+      : filters.cand === "past"
+        ? "Perioade trecute"
+        : "Perioade actuale și viitoare",
   ]
     .filter(Boolean)
     .join("  ·  ");

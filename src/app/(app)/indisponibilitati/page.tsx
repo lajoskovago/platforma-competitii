@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AutoFilterForm } from "@/components/auto-filter-form";
 import { Chips } from "@/components/game-list";
 import { Badge, Card, Empty, PageTitle, buttonClass, inputClass } from "@/components/ui";
 import { isNominator, requireUser } from "@/lib/auth";
@@ -12,9 +13,16 @@ import { getUnavailabilityList } from "@/lib/unavailability";
 export default async function AllUnavailabilityPage({ searchParams }: PageProps<"/indisponibilitati">) {
   const user = await requireUser();
   if (!isNominator(user)) redirect("/");
-  const { cand = "upcoming", regiune = "", q = "", oras = "" } = (await searchParams) as Record<string, string | undefined>;
+  const sp = (await searchParams) as Record<string, string | undefined>;
+  const cand = sp.cand ?? "upcoming";
+  const regiune = user.isMaster ? (sp.regiune ?? "") : "";
+  const q = sp.q ?? "";
+  const oras = sp.oras ?? "";
+  const de = sp.de ?? "";
+  const pana = sp.pana ?? "";
+  const hasPeriod = !!(de || pana);
 
-  const { list, cities } = await getUnavailabilityList({ cand, regiune, q, oras });
+  const { list, cities } = await getUnavailabilityList({ cand, regiune, q, oras, de, pana });
   const person = (id: string) => list.find((r) => r.user_id === id)?.person;
 
   // group by first day of the period
@@ -24,7 +32,7 @@ export default async function AllUnavailabilityPage({ searchParams }: PageProps<
   }, {});
 
   const pdfQuery = new URLSearchParams(
-    Object.entries({ cand: cand === "upcoming" ? "" : cand, regiune, q, oras }).filter(([, v]) => v),
+    Object.entries({ cand: cand === "upcoming" || hasPeriod ? "" : cand, regiune, q, oras, de, pana }).filter(([, v]) => v),
   ).toString();
 
   const href = (c: string, r: string) => {
@@ -33,6 +41,8 @@ export default async function AllUnavailabilityPage({ searchParams }: PageProps<
     if (r) p.set("regiune", r);
     if (q) p.set("q", q);
     if (oras) p.set("oras", oras);
+    if (de) p.set("de", de);
+    if (pana) p.set("pana", pana);
     const s = p.toString();
     return s ? `/indisponibilitati?${s}` : "/indisponibilitati";
   };
@@ -43,39 +53,51 @@ export default async function AllUnavailabilityPage({ searchParams }: PageProps<
         Indisponibilități
       </PageTitle>
 
-      <Chips
-        items={[
-          { key: "upcoming", label: "Actuale și viitoare" },
-          { key: "past", label: "Trecute" },
-        ]}
-        active={cand}
-        href={(k) => href(k, regiune)}
-      />
-      {user.isMaster && (
+      {!hasPeriod && (
         <Chips
           items={[
-            { key: "", label: "Toate regiunile" },
-            { key: "SR5", label: "SR5" },
-            { key: "SR6", label: "SR6" },
+            { key: "upcoming", label: "Actuale și viitoare" },
+            { key: "past", label: "Trecute" },
           ]}
-          active={regiune}
-          href={(k) => href(cand, k)}
+          active={cand}
+          href={(k) => href(k, regiune)}
         />
       )}
-      <form className="mb-4 grid grid-cols-[1fr_auto] gap-2">
-        {cand !== "upcoming" && <input type="hidden" name="cand" value={cand} />}
-        {regiune && <input type="hidden" name="regiune" value={regiune} />}
-        <input name="q" defaultValue={q} placeholder="Caută după nume…" className={inputClass} />
-        <select name="oras" defaultValue={oras} aria-label="Oraș" className={inputClass}>
-          <option value="">Toate orașele</option>
-          {cities.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-        <button className={`${buttonClass("secondary")} col-span-2`}>Filtrează</button>
-      </form>
+      <AutoFilterForm
+        className="mb-4 space-y-2 rounded-xl border border-slate-200 bg-white p-3"
+        showClear={!!(q || oras || regiune || de || pana)}
+      >
+        {!hasPeriod && cand !== "upcoming" && <input type="hidden" name="cand" value={cand} />}
+        <input name="q" type="search" defaultValue={q} placeholder="Caută după nume…" className={inputClass} />
+        <div className={`grid gap-2 ${user.isMaster ? "grid-cols-2" : "grid-cols-1"}`}>
+          <select name="oras" defaultValue={oras} aria-label="Oraș" className={inputClass}>
+            <option value="">Toate orașele</option>
+            {cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          {user.isMaster && (
+            <select name="regiune" defaultValue={regiune} aria-label="Regiune" className={inputClass}>
+              <option value="">Toate regiunile</option>
+              <option value="SR5">SR5</option>
+              <option value="SR6">SR6</option>
+            </select>
+          )}
+        </div>
+        <fieldset className="grid grid-cols-2 gap-2">
+          <legend className="mb-1 text-xs text-slate-600">Perioada (opțional)</legend>
+          <label className="text-xs text-slate-600">
+            De la
+            <input type="date" name="de" defaultValue={de} className={`${inputClass} mt-0.5`} />
+          </label>
+          <label className="text-xs text-slate-600">
+            Până la
+            <input type="date" name="pana" defaultValue={pana} className={`${inputClass} mt-0.5`} />
+          </label>
+        </fieldset>
+      </AutoFilterForm>
 
       {list.length === 0 ? (
         <Empty>Nicio indisponibilitate pentru filtrul ales.</Empty>

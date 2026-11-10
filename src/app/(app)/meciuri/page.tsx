@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AutoFilterForm } from "@/components/auto-filter-form";
 import { Chips, GameList } from "@/components/game-list";
 import { PageTitle, buttonClass, inputClass } from "@/components/ui";
 import { isNominator, requireUser } from "@/lib/auth";
@@ -55,8 +55,12 @@ export default async function GamesPage({ searchParams }: PageProps<"/meciuri">)
         href={(k) => href({ tip: k })}
       />
 
-      <form className="mb-3 space-y-2 rounded-xl border border-slate-200 bg-white p-3">
+      <AutoFilterForm
+        className="mb-3 space-y-2 rounded-xl border border-slate-200 bg-white p-3"
+        showClear={!!(oras || de || pana)}
+      >
         {tip && <input type="hidden" name="tip" value={tip} />}
+        {!hasDates && cand !== "upcoming" && <input type="hidden" name="cand" value={cand} />}
         <select name="oras" defaultValue={oras} aria-label="Oraș" className={inputClass}>
           <option value="">Toate orașele</option>
           {cities.map((c) => (
@@ -75,15 +79,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/meciuri">)
             <input type="date" name="pana" defaultValue={pana} className={`${inputClass} mt-0.5`} />
           </label>
         </div>
-        <div className="flex gap-2">
-          <button className={buttonClass("primary", true)}>Filtrează</button>
-          {(oras || de || pana) && (
-            <Link href={tip ? `/meciuri?tip=${tip}` : "/meciuri"} className={buttonClass("secondary")}>
-              Șterge
-            </Link>
-          )}
-        </div>
-      </form>
+      </AutoFilterForm>
 
       {!hasDates && (
         <Chips

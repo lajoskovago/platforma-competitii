@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ActionForm, SubmitButton } from "@/components/action-form";
+import { AutoFilterForm } from "@/components/auto-filter-form";
 import { Chips } from "@/components/game-list";
-import { Badge, Card, Field, PageTitle, SectionTitle, buttonClass, inputClass } from "@/components/ui";
+import { Badge, Card, Field, PageTitle, SectionTitle, inputClass } from "@/components/ui";
 import { UserRoleFields } from "@/components/user-role-fields";
 import { requireAdmin } from "@/lib/auth";
 import { TABLE_SKILLS, TABLE_SKILL_LABEL, formatDateTime, sevenDaysAgo, type TableSkill } from "@/lib/format";
@@ -124,9 +125,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
           return s ? `/admin/utilizatori?${s}` : "/admin/utilizatori";
         }}
       />
-      <form className="mb-3 space-y-2">
+      <AutoFilterForm className="mb-3 space-y-2" showClear={!!(q || regiune || oras || calificare)}>
         {tip && <input type="hidden" name="tip" value={tip} />}
-        <input name="q" defaultValue={q} placeholder="Caută după nume sau email…" className={inputClass} />
+        <input name="q" type="search" defaultValue={q} placeholder="Caută după nume sau email…" className={inputClass} />
         <div className="grid grid-cols-3 gap-2">
           <select name="regiune" defaultValue={regiune} aria-label="Regiune" className={inputClass}>
             <option value="">Regiune</option>
@@ -150,15 +151,8 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
             ))}
           </select>
         </div>
-        <div className="flex gap-2">
-          <button className={buttonClass("secondary")}>Filtrează</button>
-          {(q || regiune || oras || calificare) && (
-            <Link href={tip ? `/admin/utilizatori?tip=${tip}` : "/admin/utilizatori"} className={buttonClass("secondary")}>
-              Șterge filtrele
-            </Link>
-          )}
-        </div>
-      </form>
+
+      </AutoFilterForm>
       <p className="mb-2 text-sm text-slate-500">{list.length} rezultate</p>
 
       <Card className="divide-y divide-slate-100 p-0!">
