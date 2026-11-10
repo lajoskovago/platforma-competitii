@@ -758,6 +758,9 @@ isOneToOne: false
 "my_team_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
+"profile_region":
+{ Args: { "p_user_id": string }; Returns: Database["public"]['Enums']["region"]
+                           },
 "respond_to_nomination":
 { Args: { "p_nomination_id": string,"p_reason"?: string,"p_response": Database["public"]['Enums']["nomination_status"] }; Returns: undefined
                            },
@@ -772,7 +775,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "category_scope": "regional"|"national","game_competition": "regional"|"national","game_status": "scheduled"|"played"|"forfeit_home"|"forfeit_away","nomination_status": "pending"|"accepted"|"rejected","official_position": "referee_1"|"referee_2"|"referee_3"|"scorer"|"assistant_scorer"|"timekeeper"|"shot_clock"|"statistician_1"|"statistician_2"|"statistician_3","proposal_status": "pending"|"confirmed"|"withdrawn"|"not_selected","region": "SR5"|"SR6","response_kind": "accept"|"reject","user_role": "master_admin"|"user"|"regional_admin"
+            "category_scope": "regional"|"national","game_competition": "regional"|"national"|"friendly","game_status": "scheduled"|"played"|"forfeit_home"|"forfeit_away","nomination_status": "pending"|"accepted"|"rejected","official_position": "referee_1"|"referee_2"|"referee_3"|"scorer"|"assistant_scorer"|"timekeeper"|"shot_clock"|"statistician_1"|"statistician_2"|"statistician_3","proposal_status": "pending"|"confirmed"|"withdrawn"|"not_selected","region": "SR5"|"SR6","response_kind": "accept"|"reject","user_role": "master_admin"|"user"|"regional_admin"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -892,7 +895,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "category_scope": ["regional", "national"],"game_competition": ["regional", "national"],"game_status": ["scheduled", "played", "forfeit_home", "forfeit_away"],"nomination_status": ["pending", "accepted", "rejected"],"official_position": ["referee_1", "referee_2", "referee_3", "scorer", "assistant_scorer", "timekeeper", "shot_clock", "statistician_1", "statistician_2", "statistician_3"],"proposal_status": ["pending", "confirmed", "withdrawn", "not_selected"],"region": ["SR5", "SR6"],"response_kind": ["accept", "reject"],"user_role": ["master_admin", "user", "regional_admin"]
+            "category_scope": ["regional", "national"],"game_competition": ["regional", "national", "friendly"],"game_status": ["scheduled", "played", "forfeit_home", "forfeit_away"],"nomination_status": ["pending", "accepted", "rejected"],"official_position": ["referee_1", "referee_2", "referee_3", "scorer", "assistant_scorer", "timekeeper", "shot_clock", "statistician_1", "statistician_2", "statistician_3"],"proposal_status": ["pending", "confirmed", "withdrawn", "not_selected"],"region": ["SR5", "SR6"],"response_kind": ["accept", "reject"],"user_role": ["master_admin", "user", "regional_admin"]
           }
         }
 } as const

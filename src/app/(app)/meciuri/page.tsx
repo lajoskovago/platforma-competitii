@@ -10,7 +10,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/meciuri">)
   const { tip = "", cand = "upcoming" } = (await searchParams) as Record<string, string | undefined>;
 
   const games = await listGames({
-    competition: tip === "regional" || tip === "national" ? tip : undefined,
+    competition: tip === "regional" || tip === "national" || tip === "friendly" ? tip : undefined,
     when: cand === "past" ? "past" : "upcoming",
   });
 
@@ -24,12 +24,13 @@ export default async function GamesPage({ searchParams }: PageProps<"/meciuri">)
 
   return (
     <>
-      <PageTitle sub="Campionate regionale și Campionatul Național">Meciuri</PageTitle>
+      <PageTitle sub="Campionate regionale, Campionatul Național și meciuri amicale">Meciuri</PageTitle>
       <Chips
         items={[
           { key: "", label: "Toate" },
           { key: "regional", label: "Regional" },
           { key: "national", label: "Național" },
+          { key: "friendly", label: "Amicale" },
         ]}
         active={tip}
         href={(k) => href(k, cand)}

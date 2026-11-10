@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { isNominator, requireUser } from "@/lib/auth";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
 import { dbError, str, type ActionState } from "@/lib/action-state";
 import { POSITION_LABEL, bucharestToISO, formatDateTime, type OfficialPosition } from "@/lib/format";
 import { notifyUsers } from "@/lib/notify";
@@ -85,33 +85,96 @@ async function rememberExternal(name: string, userId: string) {
   if (!data) await supabase.from("external_clubs").insert({ name, created_by: userId });
 }
 
-export async function saveNationalGame(_: ActionState, fd: FormData): Promise<ActionState> {
+type Standalone = "national" | "friendly";
+const listPath = (c: Standalone) => (c === "friendly" ? "/amicale" : "/national");
+
+/**
+ * One side of a standalone game, from the form value:
+ *   "team:<id>"  an existing team
+ *   "club:<id>"  a club of the region -> its team in this category (created if missing)
+ *   "external"   free-text opponent (from outside the region)
+ */
+async function resolveSide(
+  value: string,
+  externalName: string,
+  categoryId: string,
+): Promise<{ team: string | null; ext: string | null; error?: string }> {
+  if (value.startsWith("team:")) return { team: value.slice(5), ext: null };
+  if (value.startsWith("club:")) {
+    const clubId = value.slice(5);
+    const admin = createSupabaseAdmin();
+    const { data: existing } = await admin
+      .from("teams")
+      .select("id")
+      .eq("club_id", clubId)
+      .eq("category_id", categoryId)
+      .order("created_at")
+      .limit(1)
+      .maybeSingle();
+    if (existing) return { team: existing.id, ext: null };
+    const { data: club } = await admin.from("clubs").select("name").eq("id", clubId).maybeSingle();
+    if (!club) return { team: null, ext: null, error: "Clubul ales nu există." };
+    const { data: created, error } = await admin
+      .from("teams")
+      .insert({ club_id: clubId, category_id: categoryId, name: club.name })
+      .select("id")
+      .single();
+    if (error) return { team: null, ext: null, error: dbError(error).error };
+    return { team: created.id, ext: null };
+  }
+  return { team: null, ext: externalName || null };
+}
+
+/** National championship and friendly games share this form. */
+export async function saveStandaloneGame(_: ActionState, fd: FormData): Promise<ActionState> {
   const user = await requireUser();
+  const competition: Standalone = str(fd, "competition") === "friendly" ? "friendly" : "national";
   const gameId = str(fd, "game_id");
   const categoryId = str(fd, "category_id");
   const date = str(fd, "date");
   const time = str(fd, "time");
   const gymId = str(fd, "gym_id");
+  const regionIn = str(fd, "region");
   if (!categoryId) return { error: "Alegeți categoria." };
   if (!DATE_RE.test(date) || !TIME_RE.test(time)) return { error: "Completați data și ora." };
+  // regional admins work in their own region; everyone else chooses it
+  const region = user.isRegionalAdmin ? user.region : regionIn === "SR5" || regionIn === "SR6" ? regionIn : null;
+  if (!region) return { error: "Alegeți regiunea meciului." };
 
-  const side = (s: "home" | "away") => {
-    const team = str(fd, `${s}_team_id`);
-    const ext = str(fd, `${s}_external`);
-    return team && team !== "external" ? { team, ext: null } : { team: null, ext: ext || null };
-  };
-  const home = side("home");
-  const away = side("away");
-  if (!home.team && !home.ext) return { error: "Alegeți sau scrieți echipa gazdă." };
-  if (!away.team && !away.ext) return { error: "Alegeți sau scrieți echipa oaspete." };
-  if (home.team && home.team === away.team) return { error: "O echipă nu poate juca cu ea însăși." };
-  if (!user.isAdmin && !(home.team && user.teamIds.has(home.team)) && !(away.team && user.teamIds.has(away.team))) {
-    return { error: "Una dintre echipe trebuie să fie echipa dvs." };
+  const homeValue = str(fd, "home_side");
+  const awayValue = str(fd, "away_side");
+  if (!homeValue) return { error: "Alegeți echipa gazdă." };
+  if (!awayValue) return { error: "Alegeți echipa oaspete." };
+  if (homeValue === awayValue && homeValue !== "external") return { error: "O echipă nu poate juca cu ea însăși." };
+
+  const supabase = await createSupabaseServer();
+
+  // Non-admins: one side must be their own team, before anything gets created
+  if (!user.isAdmin) {
+    const sideTeamIds: string[] = [];
+    for (const v of [homeValue, awayValue]) {
+      if (v.startsWith("team:")) sideTeamIds.push(v.slice(5));
+      if (v.startsWith("club:")) {
+        const { data: t } = await supabase.from("teams").select("id").eq("club_id", v.slice(5)).eq("category_id", categoryId);
+        sideTeamIds.push(...(t ?? []).map((x) => x.id));
+        if (user.managedClubIds.includes(v.slice(5))) sideTeamIds.push("own-club");
+      }
+    }
+    if (!sideTeamIds.some((id) => id === "own-club" || user.teamIds.has(id))) {
+      return { error: "Una dintre echipe trebuie să fie echipa dvs." };
+    }
   }
+
+  const home = await resolveSide(homeValue, str(fd, "home_external"), categoryId);
+  if (home.error) return { error: home.error };
+  const away = await resolveSide(awayValue, str(fd, "away_external"), categoryId);
+  if (away.error) return { error: away.error };
+  if (!home.team && !home.ext) return { error: "Scrieți numele echipei gazdă." };
+  if (!away.team && !away.ext) return { error: "Scrieți numele echipei oaspete." };
+  if (home.team && home.team === away.team) return { error: "O echipă nu poate juca cu ea însăși." };
 
   // Gym: existing or new
   let gym = gymId && gymId !== "new" ? gymId : null;
-  const supabase = await createSupabaseServer();
   if (gymId === "new") {
     const name = str(fd, "gym_name");
     const city = str(fd, "gym_city");
@@ -125,19 +188,10 @@ export async function saveNationalGame(_: ActionState, fd: FormData): Promise<Ac
     gym = g.id;
   }
 
-  // Region: chosen by master admin; regional admin -> own; otherwise from our team's club (DB trigger)
-  const regionInput = str(fd, "region");
-  const region =
-    user.isMaster && (regionInput === "SR5" || regionInput === "SR6")
-      ? regionInput
-      : user.isRegionalAdmin
-        ? user.region
-        : null;
-  if (user.isMaster && !region && !home.team && !away.team) return { error: "Alegeți regiunea meciului." };
-
   const row = {
-    competition: "national" as const,
+    competition,
     category_id: categoryId,
+    region,
     label: str(fd, "label") || null,
     home_team_id: home.team,
     away_team_id: away.team,
@@ -145,7 +199,6 @@ export async function saveNationalGame(_: ActionState, fd: FormData): Promise<Ac
     away_external: away.ext,
     starts_at: bucharestToISO(date, time),
     gym_id: gym,
-    ...(region ? { region } : {}),
   };
 
   const { data, error } = gameId
@@ -158,18 +211,18 @@ export async function saveNationalGame(_: ActionState, fd: FormData): Promise<Ac
   redirect(`/meci/${data[0].id}`);
 }
 
-export async function deleteNationalGame(_: ActionState, fd: FormData): Promise<ActionState> {
+export async function deleteStandaloneGame(_: ActionState, fd: FormData): Promise<ActionState> {
   await requireUser();
   const supabase = await createSupabaseServer();
   const { data, error } = await supabase
     .from("games")
     .delete()
     .eq("id", str(fd, "game_id"))
-    .eq("competition", "national")
-    .select("id");
+    .neq("competition", "regional")
+    .select("id, competition");
   if (error) return dbError(error);
   if (!data?.length) return { error: "Nu aveți drepturi pentru acest meci." };
-  redirect("/national");
+  redirect(listPath(data[0].competition as Standalone));
 }
 
 // ---------------------------------------------------------------------------

@@ -112,6 +112,13 @@ export const PROPOSAL_STATUS: Record<string, { label: string; tone: Tone }> = {
 
 export type Tone = "gray" | "amber" | "red" | "blue" | "green";
 
+export type Competition = "regional" | "national" | "friendly";
+export const COMPETITION_LABEL: Record<Competition, { short: string; long: string; tone: Tone; path: string }> = {
+  regional: { short: "Regional", long: "Campionat regional", tone: "gray", path: "/" },
+  national: { short: "Național", long: "Campionatul Național", tone: "blue", path: "/national" },
+  friendly: { short: "Amical", long: "Meci amical", tone: "green", path: "/amicale" },
+};
+
 export const REFEREE_POSITIONS = ["referee_1", "referee_2", "referee_3"] as const;
 export const TABLE_POSITIONS = [
   "scorer",

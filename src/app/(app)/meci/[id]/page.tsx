@@ -10,6 +10,7 @@ import {
   POSITION_LABEL,
   REFEREE_POSITIONS,
   TABLE_POSITIONS,
+  COMPETITION_LABEL,
   bucharestToISO,
   formatDateTime,
   isoToBucharest,
@@ -29,10 +30,12 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
 
   const home = sideName(g, "home", g.home);
   const away = sideName(g, "away", g.away);
-  const national = g.competition === "national";
+  // national championship or friendly game (not part of a regional group)
+  const standalone = g.competition !== "regional";
+  const comp = COMPETITION_LABEL[g.competition];
   const canNominate = canNominateRegion(user, g.gameRegion);
   const canEditNational =
-    national &&
+    standalone &&
     (canAdminRegion(user, g.region) ||
       (!!g.home_team_id && user.teamIds.has(g.home_team_id)) ||
       (!!g.away_team_id && user.teamIds.has(g.away_team_id)));
@@ -42,10 +45,10 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
   return (
     <>
       <PageTitle
-        back={national ? "/national" : g.group_id ? `/grupa/${g.group_id}` : "/"}
+        back={standalone ? comp.path : g.group_id ? `/grupa/${g.group_id}` : "/"}
         sub={
           <>
-            {national ? "Campionatul Național" : "Campionat regional"} · {g.category?.name}
+            {comp.long} · {g.category?.name}
             {g.groupInfo && (
               <>
                 {" "}
@@ -85,7 +88,7 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
         {g.status === "forfeit_away" && <p className="mt-2 text-sm text-red-700">Neprezentare {away}</p>}
         {canEditNational && (
           <div className="mt-3">
-            <LinkButton href={`/national/${g.id}/editeaza`} variant="secondary">
+            <LinkButton href={`${comp.path}/${g.id}/editeaza`} variant="secondary">
               Modifică meciul
             </LinkButton>
           </div>
@@ -113,7 +116,7 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
 
       {canNominate && <NominationEditor g={g} />}
 
-      {/* Result for national games (regional results go through the group program page) */}
+      {/* Result for national / friendly games (regional results go through the group program page) */}
       {canEditNational && bothSidesKnown && (
         <>
           <SectionTitle>Rezultat</SectionTitle>

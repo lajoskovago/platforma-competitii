@@ -4,8 +4,10 @@ import { ActionForm, SubmitButton } from "@/components/action-form";
 import { Badge, Card, Empty, PageTitle, SectionTitle, inputClass } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import {
+  COMPETITION_LABEL,
   NOMINATION_STATUS,
   POSITION_LABEL,
+  type Competition,
   formatDateTime,
   mapsLink,
   upcomingCutoff,
@@ -172,7 +174,7 @@ function GameCard({
         <Badge tone={st.tone}>{st.label}</Badge>
       </div>
       <div className="mt-1 text-xs text-slate-500">
-        {g.competition === "national" ? "Campionatul Național" : "Campionat regional"} · {g.category?.name}
+        {COMPETITION_LABEL[g.competition as Competition].long} · {g.category?.name}
         {g.label && ` · ${g.label}`}
       </div>
       <div className="mt-1 font-medium">

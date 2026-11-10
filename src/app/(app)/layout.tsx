@@ -48,6 +48,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           {user.managedClubIds.length > 0 && <NavLink href="/club">Clubul meu</NavLink>}
           {user.isAdmin && <NavLink href="/admin">Regional</NavLink>}
           {(user.isAdmin || user.teamIds.size > 0) && <NavLink href="/national">Național</NavLink>}
+          {(user.isAdmin || user.teamIds.size > 0 || user.isOfficial || user.canNominate) && (
+            <NavLink href="/amicale">Amicale</NavLink>
+          )}
           {isNominator(user) && <NavLink href="/indisponibilitati">Indisponibilități</NavLink>}
           {user.isAdmin && (
             <>

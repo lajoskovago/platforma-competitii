@@ -222,14 +222,14 @@ export async function getGame(gameId: string) {
     if (data) groupInfo = { name: data.group_name!, region: data.region, tournament: data.tournament_name! };
   }
   const nominations = await getNominations([g.id]);
-  const region = g.competition === "national" ? g.region : (groupInfo?.region ?? null);
+  const region = g.competition === "regional" ? (groupInfo?.region ?? null) : g.region;
   return { ...g, groupInfo, nominations, gameRegion: region };
 }
 export type GameDetail = NonNullable<Awaited<ReturnType<typeof getGame>>>;
 
 /** Visible games (RLS filters by role), with names and nominations. */
 export async function listGames(opts: {
-  competition?: "regional" | "national";
+  competition?: "regional" | "national" | "friendly";
   categoryCode?: string;
   when?: "upcoming" | "past";
   limit?: number;

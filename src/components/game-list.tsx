@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { OfficialsSummary } from "@/components/officials";
 import { Badge, Card, Empty } from "@/components/ui";
-import { formatDate, formatTime, isoToBucharest } from "@/lib/format";
+import { COMPETITION_LABEL, formatDate, formatTime, isoToBucharest } from "@/lib/format";
 import { sideName, type ListedGame } from "@/lib/queries";
 
 /** Games grouped by day, each linking to its game page. */
@@ -22,8 +22,8 @@ export function GameList({ games, empty }: { games: ListedGame[]; empty: string 
               <Link key={g.id} href={`/meci/${g.id}`} className="block px-4 py-3 active:bg-slate-50">
                 <div className="flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
                   <span className="font-semibold text-slate-700">{formatTime(g.starts_at)}</span>
-                  <Badge tone={g.competition === "national" ? "blue" : "gray"}>
-                    {g.competition === "national" ? "Național" : "Regional"} {g.category?.code}
+                  <Badge tone={COMPETITION_LABEL[g.competition].tone}>
+                    {COMPETITION_LABEL[g.competition].short} {g.category?.code}
                   </Badge>
                   {g.gym && (
                     <span>
