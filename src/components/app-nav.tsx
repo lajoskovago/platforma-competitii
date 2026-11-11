@@ -18,6 +18,7 @@ import {
   Trophy,
   UserCog,
   Users,
+  Wallet,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const ICONS = {
   calendarOff: CalendarOff,
   calendarX: CalendarX2,
   shirt: Shirt,
+  wallet: Wallet,
 } satisfies Record<string, LucideIcon>;
 
 export type NavItem = {

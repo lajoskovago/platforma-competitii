@@ -147,16 +147,68 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"game_officials": {
+                },"fee_rates": {
                   Row: {
-                    "game_id": string,"id": string,"nominated_at": string,"nominated_by": string | null,"position": Database["public"]['Enums']["official_position"],"reason": string | null,"reminder_sent_at": string | null,"responded_at": string | null,"status": Database["public"]['Enums']["nomination_status"],"user_id": string
+                    "amount": number,"category_id": string,"position": Database["public"]['Enums']["official_position"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "game_id": string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position": Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id": string
+                    "amount": number,"category_id": string,"position": Database["public"]['Enums']["official_position"],"updated_at"?: string
                   }
                   Update: {
-                    "game_id"?: string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position"?: Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id"?: string
+                    "amount"?: number,"category_id"?: string,"position"?: Database["public"]['Enums']["official_position"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "fee_rates_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fee_rates_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "group_overview"
+      referencedColumns: ["category_id"]
+    }
+                  ]
+                },"game_charges": {
+                  Row: {
+                    "away_amount": number | null,"away_paid_note": string | null,"away_paid_on": string | null,"game_id": string,"home_amount": number | null,"home_paid_note": string | null,"home_paid_on": string | null,"payer": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "away_amount"?: number | null,"away_paid_note"?: string | null,"away_paid_on"?: string | null,"game_id": string,"home_amount"?: number | null,"home_paid_note"?: string | null,"home_paid_on"?: string | null,"payer"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "away_amount"?: number | null,"away_paid_note"?: string | null,"away_paid_on"?: string | null,"game_id"?: string,"home_amount"?: number | null,"home_paid_note"?: string | null,"home_paid_on"?: string | null,"payer"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "game_charges_game_id_fkey"
+      columns: ["game_id"]
+isOneToOne: true
+      referencedRelation: "games"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "game_charges_game_id_fkey"
+      columns: ["game_id"]
+isOneToOne: true
+      referencedRelation: "public_games"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"game_officials": {
+                  Row: {
+                    "fee_override": number | null,"game_id": string,"id": string,"nominated_at": string,"nominated_by": string | null,"position": Database["public"]['Enums']["official_position"],"reason": string | null,"reminder_sent_at": string | null,"responded_at": string | null,"status": Database["public"]['Enums']["nomination_status"],"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "fee_override"?: number | null,"game_id": string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position": Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id": string
+                  }
+                  Update: {
+                    "fee_override"?: number | null,"game_id"?: string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position"?: Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -492,6 +544,44 @@ isOneToOne: false
     },{
       foreignKeyName: "impersonation_log_target_id_fkey"
       columns: ["target_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"official_payouts": {
+                  Row: {
+                    "amount": number,"created_at": string,"created_by": string | null,"id": string,"note": string | null,"paid_on": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"created_at"?: string,"created_by"?: string | null,"id"?: string,"note"?: string | null,"paid_on"?: string,"user_id": string
+                  }
+                  Update: {
+                    "amount"?: number,"created_at"?: string,"created_by"?: string | null,"id"?: string,"note"?: string | null,"paid_on"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "official_payouts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profile_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "official_payouts_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "official_payouts_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "official_payouts_user_id_fkey"
+      columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
