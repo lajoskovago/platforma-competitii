@@ -13,6 +13,7 @@ import {
   TABLE_POSITIONS,
   TABLE_SKILL_LABEL,
   COMPETITION_LABEL,
+  GAME_BLOCK_MINUTES,
   bucharestToISO,
   skillForPosition,
   formatDateTime,
@@ -219,25 +220,49 @@ async function NominationEditor({ g }: { g: G }) {
       .gte("end_date", date),
     supabase
       .from("games")
-      .select("id, starts_at, game_officials(user_id, status)")
+      .select("id, starts_at, gym_id, gym:gyms(city), game_officials(user_id, status)")
       .gte("starts_at", bucharestToISO(date, "00:00"))
       .lte("starts_at", bucharestToISO(date, "23:59"))
       .neq("id", g.id),
   ]);
 
   const regionPeople = (people ?? []).filter((p) => !g.gameRegion || p.region === g.gameRegion);
-  const warn = (uid: string) => {
-    const w: string[] = [];
+  /**
+   * warnings: real conflicts (shown with ⚠️, listed last)
+   * notes:    other games that day that do not block
+   * Rules for another game of the same person that day:
+   *   - in another city            -> conflict (officials work in one city per day)
+   *   - same gym                   -> fine (tournament games one after another)
+   *   - other gym, same city       -> conflict only if starts are < GAME_BLOCK_MINUTES apart
+   */
+  const cityKey = (c: string | null | undefined) =>
+    (c ?? "")
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase()
+      .trim();
+  const thisCity = cityKey(g.gym?.city);
+  const check = (uid: string) => {
+    const warnings: string[] = [];
+    const notes: string[] = [];
     for (const u of (unavailable ?? []).filter((x) => x.user_id === uid)) {
       const inHours = !u.start_time || (time >= u.start_time.slice(0, 5) && (!u.end_time || time < u.end_time.slice(0, 5)));
-      if (inHours) w.push(`indisponibil${u.note ? `: ${u.note}` : ""}`);
+      if (inHours) warnings.push(`indisponibil${u.note ? `: ${u.note}` : ""}`);
     }
+    const thisStart = new Date(g.starts_at).getTime();
     for (const og of sameDay ?? []) {
-      if (og.game_officials.some((o) => o.user_id === uid && o.status !== "rejected")) {
-        w.push(`alt meci la ${isoToBucharest(og.starts_at).time}`);
-      }
+      if (!og.game_officials.some((o) => o.user_id === uid && o.status !== "rejected")) continue;
+      const at = isoToBucharest(og.starts_at).time;
+      const sameGym = !!g.gym_id && og.gym_id === g.gym_id;
+      const otherCity = og.gym?.city ?? "";
+      const differentCity = !!thisCity && !!cityKey(otherCity) && cityKey(otherCity) !== thisCity;
+      const minutesApart = Math.abs(new Date(og.starts_at).getTime() - thisStart) / 60000;
+      if (sameGym) notes.push(`are meci la ${at} (aceeași sală)`);
+      else if (differentCity) warnings.push(`meci în ${otherCity} la ${at}`);
+      else if (minutesApart < GAME_BLOCK_MINUTES) warnings.push(`alt meci la ${at}, în altă sală`);
+      else notes.push(`are meci la ${at} (altă sală)`);
     }
-    return w;
+    return { warnings, notes };
   };
 
   const all: OfficialPosition[] = [...REFEREE_POSITIONS, ...TABLE_POSITIONS];
@@ -249,7 +274,8 @@ async function NominationEditor({ g }: { g: G }) {
       <Card className="mt-2 space-y-4">
         <p className="text-xs text-slate-500">
           Lista conține {g.gameRegion ? `persoanele din ${g.gameRegion}` : "persoanele din ambele regiuni"}. ⚠️ =
-          indisponibil sau nominalizat la alt meci în aceeași zi.
+          indisponibil, nominalizat în aceeași zi în alt oraș, sau într-o altă sală la mai puțin de 1 h 30 min distanță.
+          Meciurile din aceeași sală nu blochează.
         </p>
         <ActionForm action={setScoresheet} className="space-y-1 rounded-lg bg-slate-50 p-3">
           <input type="hidden" name="game_id" value={g.id} />
@@ -286,7 +312,7 @@ async function NominationEditor({ g }: { g: G }) {
           }
           const skill = skillForPosition(pos, g.scoresheet);
           const options = people.map((p) => {
-            const w = warn(p.id!);
+            const { warnings: w, notes } = check(p.id!);
             // only flag missing skills for officials who declared their skills
             const skills = p.table_skills ?? [];
             if (skill && skills.length > 0 && !skills.includes(skill)) w.push(`nu face: ${TABLE_SKILL_LABEL[skill]}`);
@@ -295,6 +321,7 @@ async function NominationEditor({ g }: { g: G }) {
               name: p.full_name ?? "",
               city: p.city ?? "",
               warnings: w,
+              notes,
               skilled: !!skill && skills.includes(skill),
             };
           });

@@ -93,6 +93,9 @@ export function sevenDaysAgo() {
   return Date.now() - 7 * 24 * 3600_000;
 }
 
+/** An official is busy this long after a game starts (games last ~1–2 h); used for nomination conflicts. */
+export const GAME_BLOCK_MINUTES = 90;
+
 /** Games that started less than 3 hours ago still count as "upcoming". */
 export function upcomingCutoff() {
   return Date.now() - 3 * 3600_000;

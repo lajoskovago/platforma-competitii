@@ -8,6 +8,8 @@ export type OfficialOption = {
   name: string;
   city?: string;
   warnings: string[];
+  /** non-blocking info, e.g. another game at the same gym */
+  notes?: string[];
   /** has the skill this position needs */
   skilled?: boolean;
 };
@@ -122,6 +124,9 @@ export function OfficialCombobox({
       {selected && selected.warnings.length > 0 && (
         <p className="mt-1 text-xs text-amber-700">⚠️ {selected.warnings.join("; ")}</p>
       )}
+      {selected && selected.warnings.length === 0 && (selected.notes ?? []).length > 0 && (
+        <p className="mt-1 text-xs text-slate-500">{selected.notes!.join("; ")}</p>
+      )}
       {open && (
         <ul
           id={listId}
@@ -145,6 +150,7 @@ export function OfficialCombobox({
               {o.city && <span className="ml-1 text-xs text-slate-500">· {o.city}</span>}
               {o.skilled && <span className="ml-1 text-xs text-emerald-700">✓</span>}
               {o.warnings.length > 0 && <span className="block text-xs text-amber-700">⚠️ {o.warnings.join("; ")}</span>}
+              {(o.notes ?? []).length > 0 && <span className="block text-xs text-slate-500">{o.notes!.join("; ")}</span>}
             </li>
           ))}
         </ul>
