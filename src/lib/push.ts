@@ -5,28 +5,54 @@ import { createSupabaseAdmin } from "@/lib/supabase/server";
 
 export type PushPayload = { title: string; body: string; url: string; tag?: string };
 
+/**
+ * Tolerates common copy/paste mistakes in the dashboard: surrounding quotes or
+ * spaces, the "NAME=" prefix, base64 padding ("="), standard instead of URL-safe base64.
+ */
+export function cleanKey(raw: string | undefined, name: string) {
+  if (!raw) return "";
+  let v = raw.trim().replace(/^['"]|['"]$/g, "").trim();
+  if (v.startsWith(`${name}=`)) v = v.slice(name.length + 1).trim();
+  return v.replace(/\s+/g, "").replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+}
+
 let configured = false;
 function configure() {
   if (configured) return true;
-  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const priv = process.env.VAPID_PRIVATE_KEY;
+  const pub = cleanKey(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY, "NEXT_PUBLIC_VAPID_PUBLIC_KEY");
+  const priv = cleanKey(process.env.VAPID_PRIVATE_KEY, "VAPID_PRIVATE_KEY");
   if (!pub || !priv) return false;
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:admin@example.com", pub, priv);
+  const subject = (process.env.VAPID_SUBJECT || "").trim().replace(/^['"]|['"]$/g, "").replace(/^VAPID_SUBJECT=/, "");
+  try {
+    webpush.setVapidDetails(subject.startsWith("mailto:") || subject.startsWith("https://") ? subject : "mailto:admin@example.com", pub, priv);
+  } catch (e) {
+    console.error("[push] invalid VAPID configuration:", (e as Error).message, `(private key length ${priv.length}, expected 43)`);
+    return false;
+  }
   configured = true;
   return true;
 }
+
+export type PushResult = { configured: boolean; devices: number; delivered: number; failed: string[] };
 
 /**
  * Sends a notification to every device of the given users. Never throws:
  * notifications must not break the action that triggered them.
  * Devices the push service reports as gone (404 / 410) are removed.
  */
-export async function sendPush(userIds: string[], payload: PushPayload) {
+export async function sendPush(userIds: string[], payload: PushPayload): Promise<PushResult> {
+  const result: PushResult = { configured: false, devices: 0, delivered: 0, failed: [] };
   try {
     const ids = [...new Set(userIds.filter(Boolean))];
-    if (!ids.length || !configure()) return;
+    if (!configure()) {
+      console.error("[push] VAPID keys missing on the server (NEXT_PUBLIC_VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY)");
+      return result;
+    }
+    result.configured = true;
+    if (!ids.length) return result;
     const admin = createSupabaseAdmin();
     const { data: subs } = await admin.from("push_subscriptions").select("*").in("user_id", ids);
+    result.devices = subs?.length ?? 0;
     await Promise.all(
       (subs ?? []).map(async (s) => {
         try {
@@ -35,17 +61,24 @@ export async function sendPush(userIds: string[], payload: PushPayload) {
             JSON.stringify(payload),
             { TTL: 24 * 3600, urgency: "high" },
           );
+          result.delivered++;
           await admin.from("push_subscriptions").update({ last_used_at: new Date().toISOString() }).eq("id", s.id);
         } catch (e) {
-          const status = (e as { statusCode?: number }).statusCode;
-          if (status === 404 || status === 410) await admin.from("push_subscriptions").delete().eq("id", s.id);
-          else console.error("[push] send failed", status, (e as Error).message);
+          const err = e as { statusCode?: number; body?: string; message?: string };
+          const host = new URL(s.endpoint).host;
+          result.failed.push(`${host}: ${err.statusCode ?? ""} ${(err.body || err.message || "").slice(0, 120)}`.trim());
+          if (err.statusCode === 404 || err.statusCode === 410) {
+            await admin.from("push_subscriptions").delete().eq("id", s.id);
+          } else {
+            console.error("[push] send failed", host, err.statusCode, err.body || err.message);
+          }
         }
       }),
     );
   } catch (e) {
     console.error("[push] failed", e);
   }
+  return result;
 }
 
 type GameInfo = {

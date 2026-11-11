@@ -57,7 +57,12 @@ export function PushToggle({ compact = false }: { compact?: boolean }) {
     setBusy(true);
     setMessage("");
     try {
-      const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      const key = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "")
+        .trim()
+        .replace(/^['"]|['"]$/g, "")
+        .replace(/^NEXT_PUBLIC_VAPID_PUBLIC_KEY=/, "")
+        .replace(/\s+/g, "")
+        .replace(/=+$/, "");
       if (!key) throw new Error("Notificările nu sunt configurate pe server.");
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
@@ -106,11 +111,7 @@ export function PushToggle({ compact = false }: { compact?: boolean }) {
   async function test() {
     setBusy(true);
     const res = await sendTestPush();
-    setMessage(
-      "error" in res && res.error
-        ? res.error
-        : "Notificare de test trimisă – ar trebui să apară în câteva secunde. Dacă nu apare, verificați setările de notificări ale telefonului.",
-    );
+    setMessage(res.error ?? res.ok ?? "");
     setBusy(false);
   }
 
