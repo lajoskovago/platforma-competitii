@@ -12,6 +12,10 @@ const PUBLIC_PATHS = [
   "/am-uitat-parola",
   "/inregistrare-oficiali",
   "/inregistrare-antrenori",
+  "/api/cron", // protected by CRON_SECRET instead of a login
+  "/sw.js",
+  "/manifest.webmanifest",
+  "/pwa-icon",
 ];
 
 /**

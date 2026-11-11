@@ -6,6 +6,7 @@ import { canAdminRegion, requireUser } from "@/lib/auth";
 import { dbError, str, type ActionState } from "@/lib/action-state";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { notifyGroup } from "@/lib/notify";
+import { notifyGameChanges, snapshotGames } from "@/lib/push";
 
 /** The caller must administer the group's region (master: all). */
 async function groupAdmin(groupId: string) {
@@ -152,6 +153,7 @@ export async function adminUpdateTournament(_: ActionState, fd: FormData): Promi
     gymId = gym.id;
   }
 
+  const before = await snapshotGames({ groupId });
   const { error } = await ctx.supabase.rpc("admin_update_tournament", {
     p_group_id: groupId,
     p_gym_id: gymId,
@@ -161,6 +163,7 @@ export async function adminUpdateTournament(_: ActionState, fd: FormData): Promi
     p_move_games: fd.get("move_games") === "on",
   });
   if (error) return dbError(error);
+  await notifyGameChanges(before); // push to officials confirmed on games that moved
   await notifyGroup(groupId, "Turneu modificat", "Administratorul a modificat data sau sala turneului.", ctx.user.id);
   redirect(`/grupa/${groupId}`);
 }

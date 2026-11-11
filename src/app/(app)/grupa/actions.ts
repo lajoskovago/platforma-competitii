@@ -7,6 +7,7 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { dbError, str, type ActionState } from "@/lib/action-state";
 import { bucharestToISO } from "@/lib/format";
 import { notifyGroup } from "@/lib/notify";
+import { notifyGameChanges, prepareGameCancellation, snapshotGames } from "@/lib/push";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}$/;
@@ -203,9 +204,11 @@ export async function updateGame(_: ActionState, fd: FormData): Promise<ActionSt
   const g = readGame(fd);
   if (g.error) return { error: g.error };
   const supabase = await createSupabaseServer();
+  const before = await snapshotGames({ gameIds: [str(fd, "game_id")] });
   const { data, error } = await supabase.from("games").update(g.row!).eq("id", str(fd, "game_id")).select("id");
   if (error) return dbError(error);
   if (!data?.length) return { error: "Nu aveți drepturi pentru acest meci." };
+  await notifyGameChanges(before);
   refresh();
   return { ok: "Meciul a fost salvat." };
 }
@@ -213,9 +216,11 @@ export async function updateGame(_: ActionState, fd: FormData): Promise<ActionSt
 export async function deleteGame(_: ActionState, fd: FormData): Promise<ActionState> {
   await requireUser();
   const supabase = await createSupabaseServer();
+  const sendCancellation = await prepareGameCancellation([str(fd, "game_id")]);
   const { data, error } = await supabase.from("games").delete().eq("id", str(fd, "game_id")).select("id");
   if (error) return dbError(error);
   if (!data?.length) return { error: "Nu aveți drepturi pentru acest meci." };
+  await sendCancellation();
   refresh();
   return { ok: "Meciul a fost șters." };
 }

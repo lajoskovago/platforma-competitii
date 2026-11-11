@@ -149,14 +149,14 @@ isOneToOne: false
                   ]
                 },"game_officials": {
                   Row: {
-                    "game_id": string,"id": string,"nominated_at": string,"nominated_by": string | null,"position": Database["public"]['Enums']["official_position"],"reason": string | null,"responded_at": string | null,"status": Database["public"]['Enums']["nomination_status"],"user_id": string
+                    "game_id": string,"id": string,"nominated_at": string,"nominated_by": string | null,"position": Database["public"]['Enums']["official_position"],"reason": string | null,"reminder_sent_at": string | null,"responded_at": string | null,"status": Database["public"]['Enums']["nomination_status"],"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "game_id": string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position": Database["public"]['Enums']["official_position"],"reason"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id": string
+                    "game_id": string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position": Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id": string
                   }
                   Update: {
-                    "game_id"?: string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position"?: Database["public"]['Enums']["official_position"],"reason"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id"?: string
+                    "game_id"?: string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position"?: Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -578,6 +578,32 @@ isOneToOne: false
       columns: ["team_id"]
 isOneToOne: false
       referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"push_subscriptions": {
+                  Row: {
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"last_used_at": string | null,"p256dh": string,"user_agent": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"last_used_at"?: string | null,"p256dh": string,"user_agent"?: string | null,"user_id"?: string
+                  }
+                  Update: {
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"last_used_at"?: string | null,"p256dh"?: string,"user_agent"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profile_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]

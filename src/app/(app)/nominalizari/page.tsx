@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ActionForm, SubmitButton } from "@/components/action-form";
+import { PushToggle } from "@/components/push-toggle";
 import { Badge, Card, Empty, PageTitle, SectionTitle, inputClass } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import {
@@ -46,6 +47,10 @@ export default async function MyNominationsPage() {
       >
         Nominalizările mele
       </PageTitle>
+
+      <div className="mb-4">
+        <PushToggle compact />
+      </div>
 
       {/* ------------------------------------------------ to confirm */}
       <SectionTitle>

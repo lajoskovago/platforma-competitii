@@ -91,6 +91,19 @@ npm run create-admin:prod -- email@domeniu.ro "Nume Prenume"   # sends the invit
 Later schema changes: add a migration, test locally (`npm run db:reset && npm run test:db`), then `supabase db push`
 and push to GitHub (Render redeploys automatically).
 
+## Push notifications (referees / table officials)
+
+Web push (PWA): the site is installable (`src/app/manifest.ts`, `public/sw.js`). Officials turn notifications on
+per device in **Nominalizările mele** / **Contul meu** (iPhone: iOS 16.4+, after "Add to Home Screen").
+
+Sent for: new nomination · nomination cancelled / replaced · date / time / gym change of a confirmed game ·
+game deleted · day-before reminder (`POST /api/cron/reminders`, called daily by `.github/workflows/reminders.yml`).
+
+Setup:
+- Render env: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`
+  (generate keys with `npx web-push generate-vapid-keys`; the public key is baked in at build → redeploy).
+- GitHub → Settings → Secrets and variables → Actions: secret `CRON_SECRET` (same value), variable `SITE_URL`.
+
 ## Not done yet (by design, MVP)
 
 - Email notifications to coaches: recipients are computed (`src/lib/notify.ts`) but nothing is sent until the sender account is chosen.

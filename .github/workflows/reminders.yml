@@ -1,0 +1,26 @@
+# Day-before push reminders for confirmed referees / table officials.
+# Needs two repository settings (Settings → Secrets and variables → Actions):
+#   secret   CRON_SECRET  – same value as CRON_SECRET in Render
+#   variable SITE_URL     – e.g. https://competitii-regiunea5.onrender.com
+name: Reamintiri meciuri
+
+on:
+  schedule:
+    - cron: "0 16 * * *" # 16:00 UTC = 18:00 in winter / 19:00 in summer (Romania)
+  workflow_dispatch: {} # "Run workflow" button for a manual run
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Send reminders
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          # the free Render instance may be asleep: retry while it wakes up
+          curl --fail-with-body --silent --show-error \
+            --retry 6 --retry-delay 20 --retry-all-errors --max-time 120 \
+            -X POST "$SITE_URL/api/cron/reminders" \
+            -H "Authorization: Bearer $CRON_SECRET"

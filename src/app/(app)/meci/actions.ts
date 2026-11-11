@@ -5,8 +5,14 @@ import { redirect } from "next/navigation";
 import { isNominator, requireUser } from "@/lib/auth";
 import { createSupabaseAdmin, createSupabaseServer } from "@/lib/supabase/server";
 import { dbError, str, type ActionState } from "@/lib/action-state";
-import { POSITION_LABEL, bucharestToISO, formatDateTime, type OfficialPosition } from "@/lib/format";
-import { notifyUsers } from "@/lib/notify";
+import { POSITION_LABEL, bucharestToISO, type OfficialPosition } from "@/lib/format";
+import {
+  notifyGameChanges,
+  notifyNominated,
+  notifyNominationCancelled,
+  prepareGameCancellation,
+  snapshotGames,
+} from "@/lib/push";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^\d{2}:\d{2}$/;
@@ -25,7 +31,7 @@ export async function setNomination(_: ActionState, fd: FormData): Promise<Actio
   const supabase = await createSupabaseServer();
   const { data: existing } = await supabase
     .from("game_officials")
-    .select("id, user_id")
+    .select("id, user_id, status")
     .eq("game_id", gameId)
     .eq("position", position)
     .maybeSingle();
@@ -34,6 +40,7 @@ export async function setNomination(_: ActionState, fd: FormData): Promise<Actio
     if (existing) {
       const { error } = await supabase.from("game_officials").delete().eq("id", existing.id);
       if (error) return dbError(error);
+      if (existing.status !== "rejected") await notifyNominationCancelled(existing.user_id, gameId, position);
     }
     refresh();
     return { ok: "Poziția a fost eliberată." };
@@ -48,12 +55,11 @@ export async function setNomination(_: ActionState, fd: FormData): Promise<Actio
     return dbError(error);
   }
 
-  const { data: game } = await supabase.from("games").select("starts_at").eq("id", gameId).single();
-  await notifyUsers(
-    [userId],
-    "Nominalizare nouă",
-    `Ați fost nominalizat ca ${POSITION_LABEL[position]} la meciul din ${game ? formatDateTime(game.starts_at) : ""}. Vă rugăm să confirmați sau să refuzați.`,
-  );
+  // push: the new person is nominated; whoever had the position (and had not refused) loses it
+  await notifyNominated(userId, gameId, position);
+  if (existing && existing.user_id !== userId && existing.status !== "rejected") {
+    await notifyNominationCancelled(existing.user_id, gameId, position);
+  }
   refresh();
   return { ok: "Nominalizarea a fost salvată." };
 }
@@ -201,11 +207,13 @@ export async function saveStandaloneGame(_: ActionState, fd: FormData): Promise<
     gym_id: gym,
   };
 
+  const before = gameId ? await snapshotGames({ gameIds: [gameId] }) : [];
   const { data, error } = gameId
     ? await supabase.from("games").update(row).eq("id", gameId).select("id")
     : await supabase.from("games").insert(row).select("id");
   if (error) return dbError(error);
   if (!data?.length) return { error: "Nu aveți drepturi pentru acest meci." };
+  await notifyGameChanges(before);
 
   await Promise.all([rememberExternal(home.ext ?? "", user.id), rememberExternal(away.ext ?? "", user.id)]);
   redirect(`/meci/${data[0].id}`);
@@ -214,6 +222,7 @@ export async function saveStandaloneGame(_: ActionState, fd: FormData): Promise<
 export async function deleteStandaloneGame(_: ActionState, fd: FormData): Promise<ActionState> {
   await requireUser();
   const supabase = await createSupabaseServer();
+  const sendCancellation = await prepareGameCancellation([str(fd, "game_id")]);
   const { data, error } = await supabase
     .from("games")
     .delete()
@@ -222,6 +231,7 @@ export async function deleteStandaloneGame(_: ActionState, fd: FormData): Promis
     .select("id, competition");
   if (error) return dbError(error);
   if (!data?.length) return { error: "Nu aveți drepturi pentru acest meci." };
+  await sendCancellation(); // deleted: tell the nominated officials
   redirect(listPath(data[0].competition as Standalone));
 }
 
