@@ -39,6 +39,18 @@ export async function updateClub(_: ActionState, fd: FormData): Promise<ActionSt
   return { ok: "Salvat." };
 }
 
+/** Deletes a club without teams (e.g. a duplicate created at sign-up). */
+export async function deleteClub(_: ActionState, fd: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const supabase = await createSupabaseServer();
+  const clubId = str(fd, "club_id");
+  const { count } = await supabase.from("teams").select("id", { count: "exact", head: true }).eq("club_id", clubId);
+  if (count) return { error: "Clubul are echipe. Ștergeți sau mutați întâi echipele." };
+  const { error } = await supabase.from("clubs").delete().eq("id", clubId);
+  if (error) return dbError(error);
+  redirect("/admin/cluburi");
+}
+
 export async function createTeam(_: ActionState, fd: FormData): Promise<ActionState> {
   await requireAdmin();
   const name = str(fd, "name");
@@ -56,6 +68,11 @@ export async function createTeam(_: ActionState, fd: FormData): Promise<ActionSt
   if (error) return dbError(error);
 
   if (groupId) {
+    const { data: grp } = await supabase.from("group_overview").select("category_id").eq("group_id", groupId).maybeSingle();
+    if (grp?.category_id !== categoryId) {
+      refresh();
+      return { error: `Echipa „${name}” a fost adăugată, dar grupa aleasă este din altă categorie – nu a fost pusă în grupă.` };
+    }
     const { error: gErr } = await supabase.from("group_teams").insert({ group_id: groupId, team_id: data.id });
     if (gErr) return dbError(gErr);
   }
@@ -96,11 +113,15 @@ export async function deleteTeam(_: ActionState, fd: FormData): Promise<ActionSt
   await requireAdmin();
   const supabase = await createSupabaseServer();
   const teamId = str(fd, "team_id");
-  const { count } = await supabase
-    .from("hosting_proposals")
-    .select("id", { count: "exact", head: true })
-    .eq("team_id", teamId);
-  if (count) return { error: "Echipa are propuneri de organizare și nu poate fi ștearsă. Mutați-o în altă grupă." };
+  const [{ count: proposals }, { count: games }] = await Promise.all([
+    supabase.from("hosting_proposals").select("id", { count: "exact", head: true }).eq("team_id", teamId),
+    supabase
+      .from("games")
+      .select("id", { count: "exact", head: true })
+      .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`),
+  ]);
+  if (games) return { error: "Echipa are meciuri și nu poate fi ștearsă (istoricul s-ar pierde)." };
+  if (proposals) return { error: "Echipa are propuneri de organizare și nu poate fi ștearsă. Mutați-o în altă grupă." };
   const { error } = await supabase.from("teams").delete().eq("id", teamId);
   if (error) return dbError(error);
   refresh();

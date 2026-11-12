@@ -201,14 +201,14 @@ isOneToOne: true
                   ]
                 },"game_officials": {
                   Row: {
-                    "fee_override": number | null,"game_id": string,"id": string,"nominated_at": string,"nominated_by": string | null,"position": Database["public"]['Enums']["official_position"],"reason": string | null,"reminder_sent_at": string | null,"responded_at": string | null,"status": Database["public"]['Enums']["nomination_status"],"user_id": string
+                    "fee_override": number | null,"game_id": string,"id": string,"nominated_at": string,"nominated_by": string | null,"position": Database["public"]['Enums']["official_position"],"reason": string | null,"reminder_sent_at": string | null,"responded_at": string | null,"self_invoiced": boolean,"status": Database["public"]['Enums']["nomination_status"],"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "fee_override"?: number | null,"game_id": string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position": Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id": string
+                    "fee_override"?: number | null,"game_id": string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position": Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"self_invoiced"?: boolean,"status"?: Database["public"]['Enums']["nomination_status"],"user_id": string
                   }
                   Update: {
-                    "fee_override"?: number | null,"game_id"?: string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position"?: Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"status"?: Database["public"]['Enums']["nomination_status"],"user_id"?: string
+                    "fee_override"?: number | null,"game_id"?: string,"id"?: string,"nominated_at"?: string,"nominated_by"?: string | null,"position"?: Database["public"]['Enums']["official_position"],"reason"?: string | null,"reminder_sent_at"?: string | null,"responded_at"?: string | null,"self_invoiced"?: boolean,"status"?: Database["public"]['Enums']["nomination_status"],"user_id"?: string
                   }
                   Relationships: [
                     {

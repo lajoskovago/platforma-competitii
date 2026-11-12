@@ -34,9 +34,19 @@ select pg_temp.as_user('00000000-0000-0000-0000-0000000000a5');
 select pg_temp.check((select count(*) from official_payouts where note like 'test%') = 2, 'nominator sees all payouts');
 select pg_temp.expect_fail($q$insert into official_payouts (user_id, amount) values ('00000000-0000-0000-0000-0000000000f1', 999)$q$, 'regional admin adds payout');
 select pg_temp.expect_fail($q$insert into fee_rates (category_id, position, amount) select id, 'referee_1', 1 from categories limit 1$q$, 'regional admin sets rate');
+-- only the master admin marks a nomination as self-invoiced (nominators may update other columns)
+reset role;
+insert into games (competition, category_id, home_external, away_external, starts_at, region)
+  select 'national', id, 'A', 'B', now() - interval '1 day', 'SR5' from categories where scope='national' and code='L1M';
+insert into game_officials (game_id, position, user_id)
+  select id, 'referee_1', '00000000-0000-0000-0000-0000000000f1' from games where home_external='A' and away_external='B';
+set local role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000a5');
+select pg_temp.expect_fail($q$update game_officials set self_invoiced = true where user_id = '00000000-0000-0000-0000-0000000000f1'$q$, 'regional admin marks self-invoiced');
 -- master writes
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000a1');
 insert into official_payouts (user_id, amount) values ('00000000-0000-0000-0000-0000000000f1', 10);
 insert into fee_rates (category_id, position, amount) select id, 'referee_1', 99 from categories where scope='regional' and code='U18M';
+update game_officials set self_invoiced = true where user_id = '00000000-0000-0000-0000-0000000000f1';
 select 'ALL DECONT TESTS PASSED' as result;
 rollback;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
+  BarChart3,
   Building2,
   CalendarDays,
   CalendarOff,
@@ -37,6 +38,7 @@ const ICONS = {
   calendarX: CalendarX2,
   shirt: Shirt,
   wallet: Wallet,
+  chart: BarChart3,
 } satisfies Record<string, LucideIcon>;
 
 export type NavItem = {

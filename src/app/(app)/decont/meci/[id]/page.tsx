@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { ActionForm, SubmitButton } from "@/components/action-form";
+import { CheckAll } from "@/components/check-all";
 import { Card, Field, PageTitle, SectionTitle, inputClass } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { getDecont, lei } from "@/lib/decont";
@@ -27,23 +28,33 @@ export default async function DecontGamePage({ params }: PageProps<"/decont/meci
 
         <SectionTitle>Sumele oficialilor</SectionTitle>
         <Card className="space-y-3">
+          {g.fees.length > 1 && (
+            <div className="border-b border-slate-100 pb-2">
+              <CheckAll prefix="self_" label="Toți facturează singuri la acest meci" />
+            </div>
+          )}
           {g.fees.map((f) => (
-            <Field
-              key={f.nominationId}
-              label={`${name(f.userId)} · ${POSITION_LABEL[f.position as OfficialPosition]}`}
-              hint={f.fromRate ? (f.missingRate ? "Fără tarif pentru această categorie / poziție" : "Din tarif – lăsați gol pentru tarif") : "Sumă modificată – ștergeți pentru tarif"}
-            >
-              <input
-                name={`fee_${f.nominationId}`}
-                inputMode="decimal"
-                defaultValue={f.fromRate ? "" : String(f.amount)}
-                placeholder={f.fromRate ? String(f.amount) : ""}
-                className={inputClass}
-              />
-            </Field>
+            <div key={f.nominationId} className="space-y-1">
+              <Field
+                label={`${name(f.userId)} · ${POSITION_LABEL[f.position as OfficialPosition]}`}
+                hint={f.fromRate ? (f.missingRate ? "Fără tarif pentru această categorie / poziție" : "Din tarif – lăsați gol pentru tarif") : "Sumă modificată – ștergeți pentru tarif"}
+              >
+                <input
+                  name={`fee_${f.nominationId}`}
+                  inputMode="decimal"
+                  defaultValue={f.fromRate ? "" : String(f.amount)}
+                  placeholder={f.fromRate ? String(f.amount) : ""}
+                  className={inputClass}
+                />
+              </Field>
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name={`self_${f.nominationId}`} defaultChecked={f.selfInvoiced} className="h-4 w-4 accent-orange-600" />
+                Facturează singur (nu intră în decont, apare în raport)
+              </label>
+            </div>
           ))}
           <p className="text-sm">
-            Total: <strong>{lei(g.total)}</strong>
+            Total prin decont: <strong>{lei(g.total)}</strong>
           </p>
         </Card>
 

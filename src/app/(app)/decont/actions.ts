@@ -64,12 +64,17 @@ export async function saveGameCharge(_: ActionState, fd: FormData): Promise<Acti
     updated_at: new Date().toISOString(),
   });
   if (error) return dbError(error);
-  // officials' individual amounts
+  // officials' individual amounts and "self-invoiced" marks
   for (const [k, v] of fd.entries()) {
     if (!k.startsWith("fee_")) continue;
+    const nominationId = k.slice(4);
     const m = money(String(v));
     if (m === "invalid") return { error: "O sumă pentru un oficial nu este validă." };
-    const { error: fErr } = await ctx.supabase.from("game_officials").update({ fee_override: m }).eq("id", k.slice(4));
+    const selfInvoiced = fd.get(`self_${nominationId}`) === "on";
+    const { error: fErr } = await ctx.supabase
+      .from("game_officials")
+      .update({ fee_override: m, self_invoiced: selfInvoiced })
+      .eq("id", nominationId);
     if (fErr) return dbError(fErr);
   }
   refresh();

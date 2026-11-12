@@ -48,14 +48,17 @@ export function renderTablePdf(opts: {
 
     const headerRow = () => {
       const y = doc.y;
-      doc.rect(left, y, tableWidth, 16).fill("#f1f5f9");
+      doc.font("bold").fontSize(8);
+      // titles may wrap onto two lines: size the header row to the tallest one
+      const h = Math.max(...opts.columns.map((c) => doc.heightOfString(c.title, { width: c.width - 8 }))) + 8;
+      doc.rect(left, y, tableWidth, h).fill("#f1f5f9");
       let x = left;
       doc.font("bold").fontSize(8).fillColor("#334155");
       for (const c of opts.columns) {
         doc.text(c.title, x + 4, y + 4, { width: c.width - 8 });
         x += c.width;
       }
-      doc.y = y + 18;
+      doc.y = y + h + 2;
     };
     const ensureSpace = (h: number) => {
       if (doc.y + h > bottom()) {

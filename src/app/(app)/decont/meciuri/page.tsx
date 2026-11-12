@@ -61,7 +61,8 @@ function GameCard({ g, canEdit }: { g: DecontGame; canEdit: boolean }) {
             {g.home} – {g.away}
           </div>
           <div className="text-xs text-slate-500">
-            {g.fees.length} oficiali · total {lei(g.total)}
+            {g.fees.filter((f) => !f.selfInvoiced).length} oficiali · total {lei(g.total)}
+            {g.fees.some((f) => f.selfInvoiced) && ` · ${g.fees.filter((f) => f.selfInvoiced).length} facturează singuri`}
             {g.fees.some((f) => f.missingRate) && <span className="text-amber-700"> · ⚠️ poziții fără tarif</span>}
           </div>
         </div>

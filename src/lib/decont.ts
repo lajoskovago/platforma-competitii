@@ -14,7 +14,16 @@ const norm = (s: string | null | undefined) =>
 
 export type Payer = "home" | "both";
 
-export type DecontFee = { nominationId: string; userId: string; position: string; amount: number; fromRate: boolean; missingRate: boolean };
+export type DecontFee = {
+  nominationId: string;
+  userId: string;
+  position: string;
+  amount: number;
+  fromRate: boolean;
+  missingRate: boolean;
+  /** the official invoices the club directly: shown, but not part of the Decont */
+  selfInvoiced: boolean;
+};
 export type DecontGame = {
   id: string;
   startsAt: string;
@@ -83,7 +92,7 @@ export async function getDecont() {
   const [{ data: noms }, { data: rates }, { data: charges }, { data: payouts }] = await Promise.all([
     admin
       .from("game_officials")
-      .select("id, game_id, user_id, position, fee_override")
+      .select("id, game_id, user_id, position, fee_override, self_invoiced")
       .in("game_id", gameIds.length ? gameIds : none)
       .eq("status", "accepted"),
     admin.from("fee_rates").select("*"),
@@ -107,9 +116,11 @@ export async function getDecont() {
           amount: override ?? (rate ? Number(rate.amount) : 0),
           fromRate: override === null,
           missingRate: override === null && !rate,
+          selfInvoiced: n.self_invoiced,
         };
       });
-    const total = round2(fees.reduce((s, f) => s + f.amount, 0));
+    // what goes through the region: self-invoiced amounts are paid by the club directly
+    const total = round2(fees.filter((f) => !f.selfInvoiced).reduce((s, f) => s + f.amount, 0));
     const c = (charges ?? []).find((x) => x.game_id === g.id);
     const defaultPayer: Payer = g.competition === "regional" ? "both" : "home";
     const payer = (c?.payer as Payer | null) ?? defaultPayer;
@@ -149,7 +160,10 @@ export async function getDecont() {
 
   // per person
   const peopleIds = [
-    ...new Set([...decontGames.flatMap((g) => g.fees.map((f) => f.userId)), ...(payouts ?? []).map((p) => p.user_id)]),
+    ...new Set([
+      ...decontGames.flatMap((g) => g.fees.filter((f) => !f.selfInvoiced).map((f) => f.userId)),
+      ...(payouts ?? []).map((p) => p.user_id),
+    ]),
   ];
   const { data: names } = await admin
     .from("profiles")
@@ -161,7 +175,7 @@ export async function getDecont() {
     let covered = 0;
     let games = 0;
     for (const g of decontGames) {
-      for (const f of g.fees.filter((x) => x.userId === id)) {
+      for (const f of g.fees.filter((x) => x.userId === id && !x.selfInvoiced)) {
         earned += f.amount;
         covered += f.amount * g.coveredFraction;
         games++;

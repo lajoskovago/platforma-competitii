@@ -28,7 +28,7 @@ export default async function DecontPersonPage({ params }: PageProps<"/decont/[u
   if (!person) notFound();
 
   const myGames = games
-    .map((g) => ({ g, fees: g.fees.filter((f) => f.userId === userId) }))
+    .map((g) => ({ g, fees: g.fees.filter((f) => f.userId === userId && !f.selfInvoiced) }))
     .filter((x) => x.fees.length);
   const myPayouts = payouts.filter((p) => p.user_id === userId);
   const today = isoToBucharest(new Date().toISOString()).date;

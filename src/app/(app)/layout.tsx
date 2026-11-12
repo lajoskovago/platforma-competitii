@@ -38,7 +38,8 @@ function navItems(user: CurrentUser): NavItem[] {
   add(user.isOfficial, { href: "/indisponibilitate", label: "Indisponibilitatea mea", short: "Indisponibil", icon: "calendarOff" });
   add(isNominator(user), { href: "/indisponibilitati", label: "Indisponibilități", icon: "calendarX" });
   add(decontAccess(user) !== null, { href: "/decont", label: "Decont", icon: "wallet" });
-  add(user.isAdmin, { href: "/admin/echipe", label: "Echipe", icon: "shirt" });
+  add(isNominator(user), { href: "/raport", label: "Raport", icon: "chart" });
+  add(user.isAdmin, { href: "/admin/cluburi", label: "Cluburi", icon: "shirt", also: ["/admin/echipe"] });
   add(user.isAdmin, { href: "/admin/utilizatori", label: "Utilizatori", icon: "userCog" });
   add(true, { href: "/cont", label: "Contul meu", short: "Cont", icon: "account" });
   return items;
