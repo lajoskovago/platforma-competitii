@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionForm, SubmitButton } from "@/components/action-form";
-import { Badge, Card, Empty, Field, PageTitle, SectionTitle, inputClass } from "@/components/ui";
+import { Card, Empty, Field, PageTitle, SectionTitle, inputClass } from "@/components/ui";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createTeam, deleteClub, deleteTeam, updateClub, updateTeam } from "../../actions";
 
 /** Admins: edit a club (name, city, region) and its teams. */
-export default async function ClubPage({ params }: PageProps<"/admin/cluburi/[id]">) {
+export default async function ClubPage({ params, searchParams }: PageProps<"/admin/cluburi/[id]">) {
   const { id } = await params;
+  const { mutata } = (await searchParams) as { mutata?: string };
   const supabase = await createSupabaseServer();
-  const [{ data: club }, { data: teams }, { data: categories }, { data: groups }, { data: managers }] = await Promise.all([
+  const [{ data: club }, { data: teams }, { data: categories }, { data: groups }, { data: managers }, { data: clubs }] =
+    await Promise.all([
     supabase.from("clubs").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("teams")
@@ -18,6 +20,7 @@ export default async function ClubPage({ params }: PageProps<"/admin/cluburi/[id
     supabase.from("categories").select("id, code, name, scope").order("sort_order"),
     supabase.from("group_overview").select("group_id, group_name, category_id, sort_order").order("sort_order"),
     supabase.from("club_managers").select("user_id").eq("club_id", id),
+    supabase.from("clubs").select("id, name, city").order("name"),
   ]);
   if (!club) notFound();
 
@@ -35,6 +38,12 @@ export default async function ClubPage({ params }: PageProps<"/admin/cluburi/[id
       <PageTitle back="/admin/cluburi" sub={[club.city, club.region].filter(Boolean).join(" · ")}>
         {club.name}
       </PageTitle>
+
+      {mutata && (
+        <p role="status" className="mb-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          ✅ Echipa „{mutata}” a fost mutată la acest club, cu grupa și meciurile ei.
+        </p>
+      )}
 
       <SectionTitle>Date club</SectionTitle>
       <Card>
@@ -82,10 +91,20 @@ export default async function ClubPage({ params }: PageProps<"/admin/cluburi/[id
                 <div className="space-y-3 bg-slate-50 px-4 py-3">
                   <ActionForm action={updateTeam}>
                     <input type="hidden" name="team_id" value={t.id} />
-                    <input type="hidden" name="club_id" value={club.id} />
+                    <input type="hidden" name="old_club_id" value={club.id} />
                     <input type="hidden" name="old_group_id" value={currentGroup} />
                     <Field label="Nume echipă" hint="Cum apare în program">
                       <input name="name" defaultValue={t.name} required className={inputClass} />
+                    </Field>
+                    <Field label="Clubul" hint="Mutarea păstrează grupa, meciurile și antrenorii echipei">
+                      <select name="club_id" defaultValue={club.id} className={inputClass}>
+                        {(clubs ?? []).map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                            {c.city ? ` (${c.city})` : ""}
+                          </option>
+                        ))}
+                      </select>
                     </Field>
                     {regional ? (
                       <Field label="Grupă (Turneul 1)">
@@ -177,16 +196,21 @@ export default async function ClubPage({ params }: PageProps<"/admin/cluburi/[id
         <p className="mt-2 text-xs text-slate-500">Administratorii se adaugă din pagina utilizatorului (Utilizatori).</p>
       </Card>
 
-      {sorted.length === 0 && (
-        <ActionForm action={deleteClub} className="mt-6" confirm={`Ștergeți definitiv clubul ${club.name}?`}>
+      <SectionTitle>Ștergere club</SectionTitle>
+      {sorted.length === 0 ? (
+        <ActionForm
+          action={deleteClub}
+          confirm={`Ștergeți definitiv clubul ${club.name}?${(adminNames ?? []).length ? " Administratorii lui nu vor mai fi legați de niciun club." : ""}`}
+        >
           <input type="hidden" name="club_id" value={club.id} />
           <SubmitButton variant="danger">Șterge clubul</SubmitButton>
-          <p className="text-xs text-slate-500">Posibil doar pentru cluburi fără echipe (de ex. un duplicat).</p>
         </ActionForm>
+      ) : (
+        <p className="text-sm text-slate-500">
+          Clubul poate fi șters doar după ce echipele lui sunt mutate la alt club (câmpul „Clubul” de la fiecare echipă)
+          sau șterse.
+        </p>
       )}
-      <div className="mt-2">
-        <Badge>{club.region ?? "fără regiune"}</Badge>
-      </div>
     </>
   );
 }

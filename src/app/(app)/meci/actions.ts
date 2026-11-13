@@ -20,48 +20,95 @@ const TIME_RE = /^\d{2}:\d{2}$/;
 // ---------------------------------------------------------------------------
 // Nominations (admins of the game's region; enforced by RLS)
 // ---------------------------------------------------------------------------
-export async function setNomination(_: ActionState, fd: FormData): Promise<ActionState> {
+/**
+ * All positions of a game (and the scoresheet type) in one save.
+ * Form fields: `user_id__<position>` for every position (empty = free).
+ * Changed positions are cleared first and then filled, so people can be swapped between positions.
+ */
+export async function saveNominations(_: ActionState, fd: FormData): Promise<ActionState> {
   const me = await requireUser();
   if (!isNominator(me)) return { error: "Nu aveți drept de nominalizare." }; // per-region check: RLS
   const gameId = str(fd, "game_id");
-  const position = str(fd, "position") as OfficialPosition;
-  const userId = str(fd, "user_id");
-  if (!POSITION_LABEL[position]) return { error: "Poziție invalidă." };
-
   const supabase = await createSupabaseServer();
-  const { data: existing } = await supabase
-    .from("game_officials")
-    .select("id, user_id, status")
-    .eq("game_id", gameId)
-    .eq("position", position)
-    .maybeSingle();
 
-  if (!userId) {
-    if (existing) {
-      const { error } = await supabase.from("game_officials").delete().eq("id", existing.id);
+  const [{ data: game }, { data: existingRows }] = await Promise.all([
+    supabase.from("games").select("scoresheet").eq("id", gameId).maybeSingle(),
+    supabase.from("game_officials").select("id, position, user_id, status").eq("game_id", gameId),
+  ]);
+  if (!game) return { error: "Meciul nu a fost găsit." };
+  const existing = existingRows ?? [];
+
+  // scoresheet type
+  let scoresheetChanged = false;
+  if (fd.has("scoresheet")) {
+    const v = str(fd, "scoresheet");
+    const next = v === "manual" || v === "dss" ? v : null;
+    if (next !== game.scoresheet) {
+      const { error } = await supabase.rpc("set_game_scoresheet", { p_game_id: gameId, p_scoresheet: next ?? undefined });
       if (error) return dbError(error);
-      if (existing.status !== "rejected") await notifyNominationCancelled(existing.user_id, gameId, position);
+      scoresheetChanged = true;
     }
-    refresh();
-    return { ok: "Poziția a fost eliberată." };
-  }
-  if (existing?.user_id === userId) return { ok: "Fără modificări." };
-
-  const { error } = existing
-    ? await supabase.from("game_officials").update({ user_id: userId }).eq("id", existing.id)
-    : await supabase.from("game_officials").insert({ game_id: gameId, position, user_id: userId });
-  if (error) {
-    if (error.code === "23505") return { error: "Persoana este deja nominalizată la acest meci." };
-    return dbError(error);
   }
 
-  // push: the new person is nominated; whoever had the position (and had not refused) loses it
-  await notifyNominated(userId, gameId, position);
-  if (existing && existing.user_id !== userId && existing.status !== "rejected") {
-    await notifyNominationCancelled(existing.user_id, gameId, position);
+  const chosen = (Object.keys(POSITION_LABEL) as OfficialPosition[])
+    .filter((p) => fd.has(`user_id__${p}`))
+    .map((p) => ({ position: p, userId: str(fd, `user_id__${p}`), current: existing.find((e) => e.position === p) }));
+  const changes = chosen.filter((c) => (c.current?.user_id ?? "") !== c.userId);
+
+  // one person, one active position: check before touching anything
+  const active = new Map<string, string>();
+  for (const c of chosen) {
+    if (!c.userId) continue;
+    if (c.current?.user_id === c.userId && c.current.status === "rejected") continue; // refused, kept as history
+    const other = active.get(c.userId);
+    if (other) {
+      return {
+        error: `Aceeași persoană este aleasă la ${POSITION_LABEL[other as OfficialPosition]} și la ${POSITION_LABEL[c.position]}.`,
+      };
+    }
+    active.set(c.userId, c.position);
   }
+
+  if (!changes.length) {
+    if (scoresheetChanged) refresh();
+    return { ok: scoresheetChanged ? "Tipul foii de joc a fost salvat." : "Fără modificări." };
+  }
+
+  const removed = changes.filter((c) => c.current).map((c) => c.current!);
+  if (removed.length) {
+    const { error } = await supabase
+      .from("game_officials")
+      .delete()
+      .in(
+        "id",
+        removed.map((r) => r.id),
+      );
+    if (error) return dbError(error);
+  }
+  const added = changes.filter((c) => c.userId);
+  if (added.length) {
+    const { error } = await supabase
+      .from("game_officials")
+      .insert(added.map((c) => ({ game_id: gameId, position: c.position, user_id: c.userId })));
+    if (error) {
+      refresh();
+      if (error.code === "23505") return { error: "O persoană este deja nominalizată la acest meci." };
+      return dbError(error);
+    }
+  }
+
+  // push: new nominations; people who lost their place (and had not refused) and are no longer on the game
+  const stillOn = new Set(chosen.map((c) => c.userId).filter(Boolean));
+  await Promise.all([
+    ...added.map((c) => notifyNominated(c.userId, gameId, c.position)),
+    ...removed
+      .filter((r) => r.status !== "rejected" && !stillOn.has(r.user_id))
+      .map((r) => notifyNominationCancelled(r.user_id, gameId, r.position as OfficialPosition)),
+  ]);
   refresh();
-  return { ok: "Nominalizarea a fost salvată." };
+  return {
+    ok: `Nominalizările au fost salvate (${changes.length} ${changes.length === 1 ? "modificare" : "modificări"}).`,
+  };
 }
 
 export async function respondNomination(_: ActionState, fd: FormData): Promise<ActionState> {
@@ -272,18 +319,4 @@ export async function deleteUnavailability(_: ActionState, fd: FormData): Promis
   if (error) return dbError(error);
   refresh();
   return {};
-}
-
-/** Nominators: manual or digital (DSS) scoresheet for the game. */
-export async function setScoresheet(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireUser();
-  const v = str(fd, "scoresheet");
-  const supabase = await createSupabaseServer();
-  const { error } = await supabase.rpc("set_game_scoresheet", {
-    p_game_id: str(fd, "game_id"),
-    p_scoresheet: v === "manual" || v === "dss" ? v : undefined,
-  });
-  if (error) return dbError(error);
-  refresh();
-  return { ok: "Tipul foii de joc a fost salvat." };
 }

@@ -88,11 +88,13 @@ export async function updateTeam(_: ActionState, fd: FormData): Promise<ActionSt
   const oldGroup = str(fd, "old_group_id");
   if (!name) return { error: "Numele echipei este obligatoriu." };
 
+  const clubId = str(fd, "club_id");
+  const oldClubId = str(fd, "old_club_id");
+  if (!clubId) return { error: "Alegeți clubul." };
+
   const supabase = await createSupabaseServer();
-  const { error } = await supabase
-    .from("teams")
-    .update({ name, club_id: str(fd, "club_id") })
-    .eq("id", teamId);
+  // moving to another club keeps the team itself (groups, games, coaches stay as they are)
+  const { error } = await supabase.from("teams").update({ name, club_id: clubId }).eq("id", teamId);
   if (error) return dbError(error);
 
   if (newGroup !== oldGroup) {
@@ -106,6 +108,8 @@ export async function updateTeam(_: ActionState, fd: FormData): Promise<ActionSt
     }
   }
   refresh();
+  // from a club's page: the team is no longer listed there, so continue on the new club's page
+  if (oldClubId && oldClubId !== clubId) redirect(`/admin/cluburi/${clubId}?mutata=${encodeURIComponent(name)}`);
   return { ok: "Echipa a fost salvată." };
 }
 

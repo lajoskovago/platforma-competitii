@@ -24,7 +24,7 @@ import {
 import { getGame, sideName } from "@/lib/queries";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { saveResult } from "../../grupa/actions";
-import { respondNomination, setNomination, setScoresheet } from "../actions";
+import { respondNomination, saveNominations } from "../actions";
 import { APP_HOME } from "@/lib/brand";
 
 export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
@@ -277,23 +277,19 @@ async function NominationEditor({ g }: { g: G }) {
           indisponibil, nominalizat în aceeași zi în alt oraș, sau într-o altă sală la mai puțin de 1 h 30 min distanță.
           Meciurile din aceeași sală nu blochează.
         </p>
-        <ActionForm action={setScoresheet} className="space-y-1 rounded-lg bg-slate-50 p-3">
+        <ActionForm action={saveNominations} className="space-y-4">
           <input type="hidden" name="game_id" value={g.id} />
-          <label className="block text-sm font-medium text-slate-700" htmlFor="scoresheet">
-            Foaie de joc
-          </label>
-          <div className="flex gap-2">
+          <div className="space-y-1 rounded-lg bg-slate-50 p-3">
+            <label className="block text-sm font-medium text-slate-700" htmlFor="scoresheet">
+              Foaie de joc
+            </label>
             <select id="scoresheet" name="scoresheet" defaultValue={g.scoresheet ?? ""} className={inputClass}>
               <option value="">— nestabilit —</option>
               <option value="manual">{SCORESHEET_LABEL.manual}</option>
               <option value="dss">{SCORESHEET_LABEL.dss}</option>
             </select>
-            <SubmitButton variant="secondary" full={false}>
-              Salvează
-            </SubmitButton>
+            <p className="text-xs text-slate-500">La foaia digitală, scorerul trebuie să știe DSS.</p>
           </div>
-          <p className="text-xs text-slate-500">La foaia digitală, scorerul trebuie să știe DSS.</p>
-        </ActionForm>
         {all.map((pos) => {
           const isRef = (REFEREE_POSITIONS as readonly string[]).includes(pos);
           const current = g.nominations.find((n) => n.position === pos);
@@ -326,9 +322,7 @@ async function NominationEditor({ g }: { g: G }) {
             };
           });
           return (
-            <ActionForm key={pos} action={setNomination} className="space-y-1">
-              <input type="hidden" name="game_id" value={g.id} />
-              <input type="hidden" name="position" value={pos} />
+            <div key={pos} className="space-y-1">
               <div className="text-sm font-medium text-slate-700">
                 {POSITION_LABEL[pos]}
                 {current && (
@@ -337,20 +331,19 @@ async function NominationEditor({ g }: { g: G }) {
                   </span>
                 )}
               </div>
-              <div className="flex items-start gap-2">
-                <OfficialCombobox
-                  name="user_id"
-                  label={POSITION_LABEL[pos]}
-                  options={options}
-                  defaultId={current?.user_id}
-                />
-                <SubmitButton variant="secondary" full={false}>
-                  Salvează
-                </SubmitButton>
-              </div>
-            </ActionForm>
+              <OfficialCombobox
+                name={`user_id__${pos}`}
+                label={POSITION_LABEL[pos]}
+                options={options}
+                defaultId={current?.user_id}
+              />
+            </div>
           );
         })}
+          <div className="sticky bottom-20 z-10 -mx-4 bg-white/95 px-4 py-2 backdrop-blur">
+            <SubmitButton>Salvează nominalizările</SubmitButton>
+          </div>
+        </ActionForm>
       </Card>
     </details>
   );
