@@ -226,7 +226,7 @@ export async function deleteGame(_: ActionState, fd: FormData): Promise<ActionSt
 }
 
 export async function saveResult(_: ActionState, fd: FormData): Promise<ActionState> {
-  await requireUser();
+  const me = await requireUser();
   const status = str(fd, "status") as "scheduled" | "played" | "forfeit_home" | "forfeit_away";
   if (!["scheduled", "played", "forfeit_home", "forfeit_away"].includes(status)) return { error: "Stare invalidă." };
 
@@ -241,17 +241,33 @@ export async function saveResult(_: ActionState, fd: FormData): Promise<ActionSt
     if (home_score === away_score) return { error: "În baschet nu există egalitate – verificați scorul." };
   }
 
+  const gameId = str(fd, "game_id");
   const supabase = await createSupabaseServer();
   const { data, error } = await supabase
     .from("games")
-    .update({ status, home_score, away_score })
-    .eq("id", str(fd, "game_id"))
+    .update({ status, home_score, away_score, result_by: me.id, result_at: new Date().toISOString() })
+    .eq("id", gameId)
     .select("id");
   if (error) {
     if (error.message.includes("games_played_needs_score")) return { error: "Ambele echipe trebuie stabilite înainte de rezultat." };
     return dbError(error);
   }
-  if (!data?.length) return { error: "Nu aveți drepturi pentru acest meci." };
+  if (!data?.length) {
+    // not an organiser / admin / team of the game: a confirmed referee or table official may still enter it
+    const { error: rpcError } = await supabase.rpc("official_set_result", {
+      p_game_id: gameId,
+      p_status: status,
+      // null for forfeits / no result (the generated types do not allow null parameters)
+      p_home_score: home_score as number,
+      p_away_score: away_score as number,
+    });
+    if (rpcError) {
+      if (rpcError.message.includes("games_played_needs_score")) {
+        return { error: "Ambele echipe trebuie stabilite înainte de rezultat." };
+      }
+      return dbError(rpcError);
+    }
+  }
   refresh();
   return { ok: "Rezultatul a fost salvat." };
 }

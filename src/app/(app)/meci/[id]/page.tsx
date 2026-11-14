@@ -46,6 +46,14 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
       (!!g.away_team_id && user.teamIds.has(g.away_team_id)));
   const myNominations = g.nominations.filter((n) => n.user_id === user.id);
   const bothSidesKnown = (g.home_team_id || g.home_external) && (g.away_team_id || g.away_external);
+  // referees / table officials who confirmed can enter the final result once the game has started
+  const started = g.starts_at <= new Date().toISOString();
+  const officiating = myNominations.some((n) => n.status === "accepted");
+  const pendingOfficial = !officiating && myNominations.some((n) => n.status === "pending");
+  const canEnterResult = canEditNational || (officiating && started);
+  const { data: resultAuthor } = g.result_by
+    ? await (await createSupabaseServer()).from("profile_names").select("full_name").eq("id", g.result_by).maybeSingle()
+    : { data: null };
 
   return (
     <>
@@ -91,6 +99,9 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
         </div>
         {g.status === "forfeit_home" && <p className="mt-2 text-sm text-red-700">Neprezentare {home}</p>}
         {g.status === "forfeit_away" && <p className="mt-2 text-sm text-red-700">Neprezentare {away}</p>}
+        {g.status !== "scheduled" && resultAuthor?.full_name && (
+          <p className="mt-1 text-xs text-slate-500">Rezultat introdus de {resultAuthor.full_name}</p>
+        )}
         {canEditNational && (
           <div className="mt-3">
             <LinkButton href={`${comp.path}/${g.id}/editeaza`} variant="secondary">
@@ -122,7 +133,14 @@ export default async function GamePage({ params }: PageProps<"/meci/[id]">) {
       {canNominate && <NominationEditor g={g} />}
 
       {/* Result for national / friendly games (regional results go through the group program page) */}
-      {canEditNational && bothSidesKnown && (
+      {!canEditNational && bothSidesKnown && officiating && !started && (
+        <p className="mt-4 text-sm text-slate-500">Rezultatul final se poate introduce după începerea meciului.</p>
+      )}
+      {!canEditNational && bothSidesKnown && pendingOfficial && started && (
+        <p className="mt-4 text-sm text-slate-500">Confirmați prezența ca să puteți introduce rezultatul final.</p>
+      )}
+
+      {canEnterResult && bothSidesKnown && (
         <>
           <SectionTitle>Rezultat</SectionTitle>
           <Card>

@@ -251,14 +251,14 @@ isOneToOne: false
                   ]
                 },"games": {
                   Row: {
-                    "away_external": string | null,"away_label": string | null,"away_score": number | null,"away_team_id": string | null,"category_id": string | null,"competition": Database["public"]['Enums']["game_competition"],"created_at": string,"created_by": string | null,"group_id": string | null,"gym_id": string | null,"home_external": string | null,"home_label": string | null,"home_score": number | null,"home_team_id": string | null,"id": string,"label": string | null,"region": Database["public"]['Enums']["region"] | null,"scoresheet": string | null,"starts_at": string,"status": Database["public"]['Enums']["game_status"],"updated_at": string,"updated_by": string | null
+                    "away_external": string | null,"away_label": string | null,"away_score": number | null,"away_team_id": string | null,"category_id": string | null,"competition": Database["public"]['Enums']["game_competition"],"created_at": string,"created_by": string | null,"group_id": string | null,"gym_id": string | null,"home_external": string | null,"home_label": string | null,"home_score": number | null,"home_team_id": string | null,"id": string,"label": string | null,"region": Database["public"]['Enums']["region"] | null,"result_at": string | null,"result_by": string | null,"scoresheet": string | null,"starts_at": string,"status": Database["public"]['Enums']["game_status"],"updated_at": string,"updated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"scoresheet"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
+                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"result_at"?: string | null,"result_by"?: string | null,"scoresheet"?: string | null,"starts_at": string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"scoresheet"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
+                    "away_external"?: string | null,"away_label"?: string | null,"away_score"?: number | null,"away_team_id"?: string | null,"category_id"?: string | null,"competition"?: Database["public"]['Enums']["game_competition"],"created_at"?: string,"created_by"?: string | null,"group_id"?: string | null,"gym_id"?: string | null,"home_external"?: string | null,"home_label"?: string | null,"home_score"?: number | null,"home_team_id"?: string | null,"id"?: string,"label"?: string | null,"region"?: Database["public"]['Enums']["region"] | null,"result_at"?: string | null,"result_by"?: string | null,"scoresheet"?: string | null,"starts_at"?: string,"status"?: Database["public"]['Enums']["game_status"],"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -332,6 +332,18 @@ isOneToOne: false
       columns: ["home_team_id"]
 isOneToOne: false
       referencedRelation: "teams"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "games_result_by_fkey"
+      columns: ["result_by"]
+isOneToOne: false
+      referencedRelation: "profile_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "games_result_by_fkey"
+      columns: ["result_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "games_updated_by_fkey"
@@ -1082,6 +1094,9 @@ isOneToOne: false
                            },
 "my_team_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
+                           },
+"official_set_result":
+{ Args: { "p_away_score": number,"p_game_id": string,"p_home_score": number,"p_status": Database["public"]['Enums']["game_status"] }; Returns: undefined
                            },
 "profile_region":
 { Args: { "p_user_id": string }; Returns: Database["public"]['Enums']["region"]
