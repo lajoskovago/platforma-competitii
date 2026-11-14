@@ -17,9 +17,9 @@ export default async function DecontGamesPage({ searchParams }: PageProps<"/deco
 
   const { games } = await getDecont();
   const relevant = games.filter((g) => g.fees.length > 0);
-  const list = arata === "toate" ? relevant : relevant.filter((g) => g.total > 0 && g.coveredFraction < 1);
+  const list = arata === "toate" ? relevant : relevant.filter((g) => g.collected < g.due);
   const owed = relevant.reduce(
-    (s, g) => s + (g.homePaidOn ? 0 : g.homeAmount) + (g.payer === "both" && !g.awayPaidOn ? g.awayAmount : 0),
+    (s, g) => s + (g.homePaidOn ? 0 : g.homeAmount) + (g.awayPaidOn ? 0 : g.awayAmount),
     0,
   );
 
@@ -61,7 +61,9 @@ function GameCard({ g, canEdit }: { g: DecontGame; canEdit: boolean }) {
             {g.home} – {g.away}
           </div>
           <div className="text-xs text-slate-500">
-            {g.fees.filter((f) => !f.selfInvoiced).length} oficiali · total {lei(g.total)}
+            {g.fees.filter((f) => !f.selfInvoiced).length} oficiali · primesc {lei(g.total)}
+            {g.surplus > 0 && ` · rămâne la regiune ${lei(g.surplus)}`}
+            {g.teamFee === null && <span className="text-amber-700"> · ⚠️ suma pe echipă nestabilită</span>}
             {g.fees.some((f) => f.selfInvoiced) && ` · ${g.fees.filter((f) => f.selfInvoiced).length} facturează singuri`}
             {g.fees.some((f) => f.missingRate) && <span className="text-amber-700"> · ⚠️ poziții fără tarif</span>}
           </div>
@@ -73,12 +75,13 @@ function GameCard({ g, canEdit }: { g: DecontGame; canEdit: boolean }) {
         )}
       </div>
       <div className="mt-2 text-xs text-slate-500">
-        {g.payer === "home" ? "Plătește doar gazda" : "Plătesc ambele echipe"}
+        {g.payer === "home" ? "Plătește gazda tot" : g.payer === "away" ? "Plătește oaspetele tot" : "Împărțit între echipe"}
+        {g.teamFee !== null && ` · ${lei(g.teamFee)} pe meci`}
         {g.payerIsDefault && " (implicit)"}
       </div>
       <div className="mt-2 space-y-2">
-        <TeamLine g={g} side="home" canEdit={canEdit} />
-        {g.payer === "both" && <TeamLine g={g} side="away" canEdit={canEdit} />}
+        {g.payer !== "away" && <TeamLine g={g} side="home" canEdit={canEdit} />}
+        {g.payer !== "home" && <TeamLine g={g} side="away" canEdit={canEdit} />}
       </div>
     </Card>
   );

@@ -43,10 +43,20 @@ insert into game_officials (game_id, position, user_id)
 set local role authenticated;
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000a5');
 select pg_temp.expect_fail($q$update game_officials set self_invoiced = true where user_id = '00000000-0000-0000-0000-0000000000f1'$q$, 'regional admin marks self-invoiced');
+-- fixed team amounts: nominators read, only the master writes
+select pg_temp.expect_fail($q$insert into team_fees (category_id, amount) select id, 1 from categories limit 1$q$, 'regional admin sets team fee');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000f1');
+select pg_temp.check((select count(*) from team_fees) = 0, 'official cannot read team fees');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000a5');
 -- master writes
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000a1');
 insert into official_payouts (user_id, amount) values ('00000000-0000-0000-0000-0000000000f1', 10);
 insert into fee_rates (category_id, position, amount) select id, 'referee_1', 99 from categories where scope='regional' and code='U18M';
 update game_officials set self_invoiced = true where user_id = '00000000-0000-0000-0000-0000000000f1';
+insert into team_fees (category_id, amount) select id, 150 from categories where scope='regional' and code='U18M';
+insert into game_charges (game_id, payer) select id, 'away' from games where home_external='A' and away_external='B';
+select pg_temp.expect_fail($q$update game_charges set payer = 'nobody'$q$, 'invalid payer');
+select pg_temp.as_user('00000000-0000-0000-0000-0000000000a5');
+select pg_temp.check((select count(*) from team_fees) >= 1, 'nominator reads team fees');
 select 'ALL DECONT TESTS PASSED' as result;
 rollback;

@@ -12,7 +12,8 @@ const norm = (s: string | null | undefined) =>
     .toLowerCase()
     .trim();
 
-export type Payer = "home" | "both";
+/** who pays the game's fee: one team all of it, or split in half */
+export type Payer = "home" | "away" | "both";
 
 export type DecontFee = {
   nominationId: string;
@@ -35,21 +36,26 @@ export type DecontGame = {
   away: string;
   gym: string;
   fees: DecontFee[];
+  /** officials' fees paid through the region (self-invoiced left out) */
   total: number;
+  /** fixed amount per game for this category; null = not set yet */
+  teamFee: number | null;
   payer: Payer;
   payerIsDefault: boolean;
   homeAmount: number;
   awayAmount: number;
-  homeAmountIsDefault: boolean;
-  awayAmountIsDefault: boolean;
   homePaidOn: string | null;
   homePaidNote: string | null;
   awayPaidOn: string | null;
   awayPaidNote: string | null;
+  /** what the teams owe in total for this game */
+  due: number;
   /** sum of the team amounts already paid */
   collected: number;
   /** share of the officials' fees covered by what the teams paid (0..1) */
   coveredFraction: number;
+  /** paid by the teams beyond the officials' fees (stays with the region) */
+  surplus: number;
 };
 export type DecontPerson = {
   userId: string;
@@ -89,7 +95,7 @@ export async function getDecont() {
   const gameIds = games.map((g) => g.id);
   const none = ["00000000-0000-0000-0000-000000000000"];
 
-  const [{ data: noms }, { data: rates }, { data: charges }, { data: payouts }] = await Promise.all([
+  const [{ data: noms }, { data: rates }, { data: charges }, { data: payouts }, { data: teamFees }] = await Promise.all([
     admin
       .from("game_officials")
       .select("id, game_id, user_id, position, fee_override, self_invoiced")
@@ -98,6 +104,7 @@ export async function getDecont() {
     admin.from("fee_rates").select("*"),
     admin.from("game_charges").select("*").in("game_id", gameIds.length ? gameIds : none),
     admin.from("official_payouts").select("*").order("paid_on", { ascending: false }),
+    admin.from("team_fees").select("*"),
   ]);
 
   const rateOf = (categoryId: string, position: string) =>
@@ -124,12 +131,13 @@ export async function getDecont() {
     const c = (charges ?? []).find((x) => x.game_id === g.id);
     const defaultPayer: Payer = g.competition === "regional" ? "both" : "home";
     const payer = (c?.payer as Payer | null) ?? defaultPayer;
-    const homeDefault = payer === "both" ? round2(total / 2) : total;
-    const awayDefault = payer === "both" ? round2(total - homeDefault) : 0;
-    const homeAmount = c?.home_amount !== null && c?.home_amount !== undefined ? Number(c.home_amount) : homeDefault;
-    const awayAmount =
-      payer === "home" ? 0 : c?.away_amount !== null && c?.away_amount !== undefined ? Number(c.away_amount) : awayDefault;
-    const collected = (c?.home_paid_on ? homeAmount : 0) + (payer === "both" && c?.away_paid_on ? awayAmount : 0);
+    // the category's fixed fee per game: paid by one team, or split in half
+    const tf = (teamFees ?? []).find((x) => x.category_id === g.category_id);
+    const teamFee = tf ? Number(tf.amount) : null;
+    const fee = teamFee ?? 0;
+    const homeAmount = payer === "home" ? fee : payer === "both" ? round2(fee / 2) : 0;
+    const awayAmount = payer === "away" ? fee : payer === "both" ? round2(fee - homeAmount) : 0;
+    const collected = (homeAmount > 0 && c?.home_paid_on ? homeAmount : 0) + (awayAmount > 0 && c?.away_paid_on ? awayAmount : 0);
     const due = homeAmount + awayAmount;
     return {
       id: g.id,
@@ -143,18 +151,20 @@ export async function getDecont() {
       gym: g.gym ? `${g.gym.name}, ${g.gym.city}` : "",
       fees,
       total,
+      teamFee,
       payer,
       payerIsDefault: !c?.payer,
       homeAmount,
       awayAmount,
-      homeAmountIsDefault: c?.home_amount === null || c?.home_amount === undefined,
-      awayAmountIsDefault: c?.away_amount === null || c?.away_amount === undefined,
       homePaidOn: c?.home_paid_on ?? null,
       homePaidNote: c?.home_paid_note ?? null,
       awayPaidOn: c?.away_paid_on ?? null,
       awayPaidNote: c?.away_paid_note ?? null,
+      due: round2(due),
       collected: round2(collected),
-      coveredFraction: due > 0 ? Math.min(1, collected / due) : 0,
+      // officials are paid from what the teams paid
+      coveredFraction: total > 0 ? Math.min(1, collected / total) : 1,
+      surplus: round2(Math.max(0, collected - total)),
     };
   });
 

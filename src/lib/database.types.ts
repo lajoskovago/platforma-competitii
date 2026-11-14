@@ -173,6 +173,26 @@ isOneToOne: false
       referencedColumns: ["category_id"]
     }
                   ]
+                },"team_fees": {
+                  Row: {
+                    "amount": number,"category_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount": number,"category_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "amount"?: number,"category_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_fees_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: true
+      referencedRelation: "categories"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"game_charges": {
                   Row: {
                     "away_amount": number | null,"away_paid_note": string | null,"away_paid_on": string | null,"game_id": string,"home_amount": number | null,"home_paid_note": string | null,"home_paid_on": string | null,"payer": string | null,"updated_at": string

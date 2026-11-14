@@ -60,32 +60,36 @@ export default async function DecontGamePage({ params }: PageProps<"/decont/meci
 
         <SectionTitle>Cine plătește</SectionTitle>
         <Card className="space-y-3">
-          <Field label="Plătitor" hint={`Implicit: ${g.competition === "regional" ? "ambele echipe (turneu)" : "doar gazda"}`}>
+          <Field label="Plătitor" hint={`Implicit: ${g.competition === "regional" ? "împărțit în două (turneu)" : "gazda plătește tot"}`}>
             <select name="payer" defaultValue={g.payerIsDefault ? "" : g.payer} className={inputClass}>
               <option value="">Implicit</option>
-              <option value="home">Doar echipa gazdă</option>
-              <option value="both">Ambele echipe</option>
+              <option value="home">Gazda plătește tot</option>
+              <option value="away">Oaspetele plătește tot</option>
+              <option value="both">Împărțit în două</option>
             </select>
           </Field>
-          <div className="grid grid-cols-2 gap-2">
-            <Field label={`${g.home} (gazdă)`} hint="Gol = calculat automat">
-              <input
-                name="home_amount"
-                inputMode="decimal"
-                defaultValue={g.homeAmountIsDefault ? "" : String(g.homeAmount)}
-                placeholder={String(g.homeAmount)}
-                className={inputClass}
-              />
-            </Field>
-            <Field label={`${g.away} (oaspete)`} hint="Doar dacă plătesc ambele">
-              <input
-                name="away_amount"
-                inputMode="decimal"
-                defaultValue={g.awayAmountIsDefault ? "" : String(g.awayAmount)}
-                placeholder={String(g.awayAmount)}
-                className={inputClass}
-              />
-            </Field>
+          <div className="space-y-1 rounded-lg bg-slate-50 p-3 text-sm">
+            {g.teamFee === null ? (
+              <p className="text-amber-700">
+                ⚠️ Suma pe echipă nu este stabilită pentru această categorie (Tarife).
+              </p>
+            ) : (
+              <>
+                {g.homeAmount > 0 && (
+                  <p>
+                    {g.home} (gazdă): <strong>{lei(g.homeAmount)}</strong>
+                  </p>
+                )}
+                {g.awayAmount > 0 && (
+                  <p>
+                    {g.away} (oaspete): <strong>{lei(g.awayAmount)}</strong>
+                  </p>
+                )}
+                <p className="text-xs text-slate-500">
+                  {lei(g.teamFee)} pe meci la {g.categoryName}. Oficialii primesc {lei(g.total)} din ce plătesc echipele.
+                </p>
+              </>
+            )}
           </div>
         </Card>
 

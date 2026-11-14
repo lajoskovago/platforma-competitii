@@ -27,6 +27,17 @@ export async function saveRates(_: ActionState, fd: FormData): Promise<ActionSta
   if (!ctx) return { error: "Doar administratorul principal modifică tarifele." };
   const categoryIds = fd.getAll("category_id").map(String).filter(Boolean);
   if (!categoryIds.length) return { error: "Alegeți categoria." };
+  // fixed amount each paying team owes per game
+  const teamFee = money(str(fd, "team_fee"));
+  if (teamFee === "invalid") return { error: "Suma plătită de echipă nu este validă." };
+  const { error: tErr } =
+    teamFee === null
+      ? await ctx.supabase.from("team_fees").delete().in("category_id", categoryIds)
+      : await ctx.supabase
+          .from("team_fees")
+          .upsert(categoryIds.map((category_id) => ({ category_id, amount: teamFee, updated_at: new Date().toISOString() })));
+  if (tErr) return dbError(tErr);
+
   const upserts: { category_id: string; position: OfficialPosition; amount: number }[] = [];
   const deletes: OfficialPosition[] = [];
   for (const pos of Object.keys(POSITION_LABEL) as OfficialPosition[]) {
@@ -52,15 +63,13 @@ export async function saveGameCharge(_: ActionState, fd: FormData): Promise<Acti
   if (!ctx) return { error: "Doar administratorul principal." };
   const gameId = str(fd, "game_id");
   const payerIn = str(fd, "payer");
-  const payer = payerIn === "home" || payerIn === "both" ? payerIn : null;
-  const home = money(str(fd, "home_amount"));
-  const away = money(str(fd, "away_amount"));
-  if (home === "invalid" || away === "invalid") return { error: "Suma nu este validă." };
+  const payer = payerIn === "home" || payerIn === "away" || payerIn === "both" ? payerIn : null;
+  // team amounts come from the category (team_fees); only who pays is chosen per game
   const { error } = await ctx.supabase.from("game_charges").upsert({
     game_id: gameId,
     payer,
-    home_amount: home,
-    away_amount: payer === "home" ? null : away,
+    home_amount: null,
+    away_amount: null,
     updated_at: new Date().toISOString(),
   });
   if (error) return dbError(error);

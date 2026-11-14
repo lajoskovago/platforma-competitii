@@ -22,7 +22,10 @@ export default async function DecontPage() {
     { toReceive: 0, availableNow: 0, notCollected: 0 },
   );
   const missingRates = games.filter((g) => g.fees.some((f) => f.missingRate)).length;
-  const uncollectedGames = games.filter((g) => g.total > 0 && g.coveredFraction < 1).length;
+  const uncollectedGames = games.filter((g) => g.collected < g.due).length;
+  const missingTeamFees = games.filter((g) => g.teamFee === null).length;
+  const collected = games.reduce((s, g) => s + g.collected, 0);
+  const surplus = games.reduce((s, g) => s + g.surplus, 0);
 
   return (
     <>
@@ -44,6 +47,26 @@ export default async function DecontPage() {
           </LinkButton>
         )}
       </div>
+      <p className="mt-3 text-sm text-slate-600">
+        Încasat de la echipe: <strong>{lei(collected)}</strong>
+        {surplus > 0 && (
+          <>
+            {" "}
+            · rămâne la regiune după plata oficialilor: <strong>{lei(surplus)}</strong>
+          </>
+        )}
+      </p>
+      {missingTeamFees > 0 && (
+        <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          ⚠️ {missingTeamFees} {missingTeamFees === 1 ? "meci nu are" : "meciuri nu au"} stabilită suma plătită de echipe
+          (apare ca 0).{" "}
+          {user.isMaster && (
+            <Link href="/decont/tarife" className="underline">
+              Completați tarifele
+            </Link>
+          )}
+        </p>
+      )}
       {missingRates > 0 && (
         <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
           ⚠️ {missingRates} {missingRates === 1 ? "meci are" : "meciuri au"} poziții fără tarif – sumele lor apar ca 0.{" "}

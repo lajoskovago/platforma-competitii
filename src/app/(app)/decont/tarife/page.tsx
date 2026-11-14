@@ -13,20 +13,22 @@ export default async function RatesPage({ searchParams }: PageProps<"/decont/tar
   if (!user.isMaster) redirect("/decont");
   const { cat } = (await searchParams) as Record<string, string | undefined>;
   const supabase = await createSupabaseServer();
-  const [{ data: categories }, { data: rates }] = await Promise.all([
+  const [{ data: categories }, { data: rates }, { data: teamFees }] = await Promise.all([
     supabase.from("categories").select("id, code, name, scope, sort_order").order("sort_order"),
     supabase.from("fee_rates").select("*"),
+    supabase.from("team_fees").select("*"),
   ]);
   const cats = categories ?? [];
   const current = cats.find((c) => c.id === cat) ?? cats[0];
   const rateOf = (pos: string) => (rates ?? []).find((r) => r.category_id === current?.id && r.position === pos);
   const countFor = (id: string) => (rates ?? []).filter((r) => r.category_id === id).length;
+  const teamFeeOf = (id: string | undefined) => (teamFees ?? []).find((t) => t.category_id === id);
   const sameScope = cats.filter((c) => c.scope === current?.scope && c.id !== current?.id);
 
   return (
     <>
-      <PageTitle back="/decont" sub="Suma pe meci pentru fiecare poziție. Gol = fără tarif (0).">
-        Tarife arbitri și oficiali
+      <PageTitle back="/decont" sub="Taxa pe meci plătită de echipe și ce primește fiecare oficial. Gol = nestabilit (0).">
+        Tarife
       </PageTitle>
 
       {(["regional", "national"] as const).map((scope) => (
@@ -46,7 +48,7 @@ export default async function RatesPage({ searchParams }: PageProps<"/decont/tar
                   }`}
                 >
                   {c.code}
-                  {countFor(c.id) > 0 ? " ✓" : ""}
+                  {countFor(c.id) > 0 && teamFeeOf(c.id) ? " ✓" : ""}
                 </Link>
               ))}
           </div>
@@ -59,8 +61,22 @@ export default async function RatesPage({ searchParams }: PageProps<"/decont/tar
           <SectionTitle>
             {current.scope === "national" ? "Național" : "Regional"} · {current.name}
           </SectionTitle>
+          <Card className="mb-3">
+            <Field
+              label="Taxa de arbitraj pe meci"
+              hint="Sumă fixă, indiferent câți oficiali sunt nominalizați. La fiecare meci se alege dacă o echipă plătește tot sau se împarte în două."
+            >
+              <input
+                name="team_fee"
+                inputMode="decimal"
+                defaultValue={teamFeeOf(current.id)?.amount ?? ""}
+                placeholder="lei"
+                className={inputClass}
+              />
+            </Field>
+          </Card>
           <Card className="space-y-3">
-            <div className="text-xs font-semibold uppercase text-slate-500">Arbitri</div>
+            <div className="text-xs font-semibold uppercase text-slate-500">Primesc arbitrii</div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {REFEREE_POSITIONS.map((pos) => (
                 <Field key={pos} label={POSITION_LABEL[pos]}>
@@ -68,7 +84,7 @@ export default async function RatesPage({ searchParams }: PageProps<"/decont/tar
                 </Field>
               ))}
             </div>
-            <div className="pt-2 text-xs font-semibold uppercase text-slate-500">Oficiali de masă</div>
+            <div className="pt-2 text-xs font-semibold uppercase text-slate-500">Primesc oficialii de masă</div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {TABLE_POSITIONS.map((pos) => (
                 <Field key={pos} label={POSITION_LABEL[pos]}>
