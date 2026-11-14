@@ -59,5 +59,26 @@ update games set home_score = 10 where id = '00000000-0000-0000-0000-0000000005f
 select pg_temp.check((select home_team_id = '00000000-0000-0000-0000-00000000000d'
                         from games where id = '00000000-0000-0000-0000-0000000005f3'), 'manual team kept');
 
+-- semifinals without a name: the first two games by start time are SF1 and SF2
+update games set label = null, status = 'scheduled', home_score = null, away_score = null
+ where id in ('00000000-0000-0000-0000-0000000005f1', '00000000-0000-0000-0000-0000000005f2');
+update games set starts_at = now() + interval '1 hour' where id = '00000000-0000-0000-0000-0000000005f1';  -- SF1 now second
+update games set status = 'scheduled', home_score = null, away_score = null, home_team_id = null, away_team_id = null,
+                 home_label = 'Învinsă SF1'
+ where id in ('00000000-0000-0000-0000-0000000005f3', '00000000-0000-0000-0000-0000000005f4');
+update games set home_label = 'Câștigătoare SF1' where id = '00000000-0000-0000-0000-0000000005f4';
+-- B–C (earliest) is SF1 now: C wins
+update games set status = 'played', home_score = 40, away_score = 52 where id = '00000000-0000-0000-0000-0000000005f2';
+select pg_temp.check((select home_team_id = '00000000-0000-0000-0000-00000000000c' and away_team_id is null
+                        from games where id = '00000000-0000-0000-0000-0000000005f4'), 'unnamed SF1 winner in the final');
+select pg_temp.check((select home_team_id = '00000000-0000-0000-0000-00000000000b'
+                        from games where id = '00000000-0000-0000-0000-0000000005f3'), 'unnamed SF1 loser in the 3rd place game');
+-- A–D (second) is SF2: A wins
+update games set status = 'played', home_score = 66, away_score = 30 where id = '00000000-0000-0000-0000-0000000005f1';
+select pg_temp.check((select away_team_id = '00000000-0000-0000-0000-00000000000a'
+                        from games where id = '00000000-0000-0000-0000-0000000005f4'), 'unnamed SF2 winner in the final');
+select pg_temp.check((select away_team_id = '00000000-0000-0000-0000-00000000000d'
+                        from games where id = '00000000-0000-0000-0000-0000000005f3'), 'unnamed SF2 loser in the 3rd place game');
+
 rollback;
 select 'semifinal_test OK';
